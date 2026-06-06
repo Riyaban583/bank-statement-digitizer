@@ -183,9 +183,7 @@ Manages all Firestore operations: saving parsed transactions, retrieving history
 
 ## 🗺 Roadmap
 
-- [x] PDF upload and text extraction
-- [x] Basic transaction parsing
-- [x] Transaction table UI
+
 - [ ] Save parsed transactions to Firestore
 - [ ] View past statement uploads
 - [ ] Export to `.xlsx` / `.csv`
@@ -193,6 +191,13 @@ Manages all Firestore operations: saving parsed transactions, retrieving history
 - [ ] User authentication (Firebase Auth)
 - [ ] Charts and spending analytics
 - [ ] Mobile-responsive improvements
+- [ ] PDF Upload
+- [ ] PDF Parsing
+- [ ] Firestore Save
+- [ ] Firestore Read
+- [ ] Transaction Dashboard
+- [ ] Search Functionality
+    
 
 ---
 
