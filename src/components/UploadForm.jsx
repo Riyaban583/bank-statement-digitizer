@@ -1,6 +1,7 @@
 import { useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import { parseTransactions } from "../services/transactionParser";
+import { saveTransactions } from "../services/firestoreService";
 
 // PDF Worker Setup
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -20,10 +21,6 @@ export default function UploadForm() {
     if (!selectedFile) return;
 
     setFile(selectedFile);
-
-    console.log("File Name:", selectedFile.name);
-    console.log("File Size:", selectedFile.size);
-    console.log("File Type:", selectedFile.type);
   };
 
   const handleUpload = async () => {
@@ -57,9 +54,6 @@ export default function UploadForm() {
         fullText += pageText + "\n";
       }
 
-      console.log("PDF TEXT:");
-      console.log(fullText);
-
       setPdfText(fullText);
 
       const parsedTransactions =
@@ -69,6 +63,9 @@ export default function UploadForm() {
 
       console.log("Transactions:");
       console.log(parsedTransactions);
+
+      // Save to Firestore
+      await saveTransactions(parsedTransactions);
 
       alert(
         `PDF Loaded Successfully (${pdf.numPages} pages)`
@@ -82,27 +79,47 @@ export default function UploadForm() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto mt-10 p-6 border rounded-lg shadow">
-      <h1 className="text-3xl font-bold mb-6">
-        Upload Bank Statement
-      </h1>
+  <div className="min-h-screen bg-slate-100 py-10 px-4">
+    <div className="max-w-6xl mx-auto">
 
-      {/* File Upload */}
-      <div className="mb-4">
-        <label className="block mb-2 font-medium">
-          Select PDF
+      {/* Header */}
+      <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl p-8 shadow-lg mb-8">
+        <h1 className="text-4xl font-bold">
+          Bank Statement Digitizer
+        </h1>
+
+        <p className="mt-2 text-blue-100">
+          Upload, Parse and Store Bank Transactions
+        </p>
+      </div>
+
+      {/* Upload Section */}
+      <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
+
+        <label className="block text-lg font-semibold mb-3">
+          Upload PDF Statement
         </label>
 
         <input
           type="file"
           accept=".pdf"
           onChange={handleFileChange}
+          className="w-full border-2 border-dashed border-blue-300 rounded-xl p-5 cursor-pointer"
         />
+
+        {file && (
+          <div className="mt-4 bg-green-50 border border-green-200 rounded-xl p-4">
+            <p className="text-green-700 font-medium">
+              Selected File: {file.name}
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Password */}
-      <div className="mb-4">
-        <label className="block mb-2 font-medium">
+      {/* Password Section */}
+      <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
+
+        <label className="block text-lg font-semibold mb-3">
           PDF Password
         </label>
 
@@ -110,104 +127,135 @@ export default function UploadForm() {
           type="password"
           placeholder="Enter PDF Password"
           value={password}
-          onChange={(e) =>
-            setPassword(e.target.value)
-          }
-          className="w-full border p-2 rounded"
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
         />
       </div>
 
       {/* Upload Button */}
       <button
         onClick={handleUpload}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-8 py-3 rounded-xl shadow-md transition mb-8"
       >
         Upload & Parse
       </button>
 
-      {/* Selected File */}
-      {file && (
-        <p className="mt-4 text-green-600">
-          Selected: {file.name}
-        </p>
+      {/* Stats */}
+      {transactions.length > 0 && (
+        <div className="grid md:grid-cols-3 gap-5 mb-8">
+
+          <div className="bg-white rounded-xl shadow p-5">
+            <p className="text-gray-500">
+              Transactions
+            </p>
+
+            <h2 className="text-3xl font-bold text-blue-600">
+              {transactions.length}
+            </h2>
+          </div>
+
+          <div className="bg-white rounded-xl shadow p-5">
+            <p className="text-gray-500">
+              Status
+            </p>
+
+            <h2 className="text-3xl font-bold text-green-600">
+              Parsed
+            </h2>
+          </div>
+
+          <div className="bg-white rounded-xl shadow p-5">
+            <p className="text-gray-500">
+              File
+            </p>
+
+            <h2 className="text-lg font-bold text-purple-600 truncate">
+              {file?.name}
+            </h2>
+          </div>
+
+        </div>
       )}
 
-      {/* PDF Text Preview */}
+      {/* Extracted Text */}
       {pdfText && (
-        <div className="mt-6">
-          <h3 className="text-lg font-bold mb-2">
+        <div className="bg-white rounded-2xl shadow-md p-6 mb-8">
+
+          <h3 className="text-2xl font-bold mb-4">
             Extracted Text Preview
           </h3>
 
           <textarea
             value={pdfText}
             readOnly
-            rows={10}
-            className="w-full border p-3 rounded"
+            rows={12}
+            className="w-full border border-gray-300 rounded-xl p-4"
           />
         </div>
       )}
 
-      {/* Transaction Table */}
+      {/* Transactions Table */}
       {transactions.length > 0 && (
-        <div className="mt-8">
-          <h3 className="text-lg font-bold mb-4">
-            Parsed Transactions
-          </h3>
+        <div className="bg-white rounded-2xl shadow-md overflow-hidden">
+
+          <div className="p-6 border-b">
+            <h3 className="text-2xl font-bold">
+              Parsed Transactions
+            </h3>
+          </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full border border-gray-300">
+
+            <table className="w-full">
+
               <thead>
-                <tr className="bg-gray-200">
-                  <th className="border p-2">
-                    Date
-                  </th>
-                  <th className="border p-2">
-                    Description
-                  </th>
-                  <th className="border p-2">
-                    Debit
-                  </th>
-                  <th className="border p-2">
-                    Credit
-                  </th>
-                  <th className="border p-2">
-                    Balance
-                  </th>
+                <tr className="bg-blue-600 text-white">
+                  <th className="p-4 text-left">Date</th>
+                  <th className="p-4 text-left">Description</th>
+                  <th className="p-4 text-right">Debit</th>
+                  <th className="p-4 text-right">Credit</th>
+                  <th className="p-4 text-right">Balance</th>
                 </tr>
               </thead>
 
               <tbody>
-                {transactions.map(
-                  (txn, index) => (
-                    <tr key={index}>
-                      <td className="border p-2">
-                        {txn.date}
-                      </td>
 
-                      <td className="border p-2">
-                        {txn.description}
-                      </td>
+                {transactions.map((txn, index) => (
+                  <tr
+                    key={index}
+                    className="border-b hover:bg-gray-50"
+                  >
+                    <td className="p-4">
+                      {txn.date}
+                    </td>
 
-                      <td className="border p-2">
-                        {txn.debit}
-                      </td>
+                    <td className="p-4 font-medium">
+                      {txn.description}
+                    </td>
 
-                      <td className="border p-2">
-                        {txn.credit}
-                      </td>
+                    <td className="p-4 text-right text-red-600">
+                      {txn.debit || "-"}
+                    </td>
 
-                      <td className="border p-2">
-                        {txn.balance}
-                      </td>
-                    </tr>
-                  )
-                )}
+                    <td className="p-4 text-right text-green-600">
+                      {txn.credit || "-"}
+                    </td>
+
+                    <td className="p-4 text-right font-semibold">
+                      ₹ {txn.balance}
+                    </td>
+                  </tr>
+                ))}
+
               </tbody>
+
             </table>
+
           </div>
         </div>
       )}
+
     </div>
-  );
+  </div>
+);
 }
