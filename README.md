@@ -230,7 +230,7 @@ Each parser returns an array of normalized transaction objects:
 
 ### `users` collection
 
-Stores authenticated user profile information.
+Stores authenticated user profile information and security.
 
 | Field | Type | Description |
 |---|---|---|
