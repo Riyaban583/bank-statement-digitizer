@@ -59,7 +59,7 @@ The application supports multiple Indian bank formats (SBI, HDFC, ICICI) through
 
 ---
 
-## System Architecture
+## System Architecture and design
 
 ### End-to-end upload and parsing flow
 
@@ -337,7 +337,7 @@ All core modules have been tested and verified.
 
 ✅ **Completed** as part of the Bank Statement Digitizer internship assignment.
 
-All features have been implemented, tested, and verified. The application handles supported bank formats correctly and rejects unsupported formats with a typed error.
+All features have been implemented, tested, and verified. The application handles supported bank formats correctly and rejects unsupported formats with a typed error. 
 
 ---
 
