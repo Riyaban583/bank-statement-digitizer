@@ -2,19 +2,57 @@ const { parseSBI } = require("./sbi");
 const { parseHDFC } = require("./hdfc");
 const { parseICICI } = require("./icici");
 
-function parseStatement(text, bank) {
-  switch (bank.toLowerCase()) {
+function normalizeTransactions(
+  transactions
+) {
+  return transactions.map(
+    (txn) => ({
+      date: txn.date,
+
+      description:
+        txn.description,
+
+      amount:
+        txn.credit ||
+        txn.debit ||
+        "",
+
+      type: txn.credit
+        ? "credit"
+        : "debit",
+
+      balance:
+        txn.balance,
+    })
+  );
+}
+
+function parseStatement(
+  text,
+  bank
+) {
+  switch (
+    bank.toLowerCase()
+  ) {
     case "sbi":
-      return parseSBI(text);
+      return normalizeTransactions(
+        parseSBI(text)
+      );
 
     case "hdfc":
-      return parseHDFC(text);
+      return normalizeTransactions(
+        parseHDFC(text)
+      );
 
     case "icici":
-      return parseICICI(text);
+      return normalizeTransactions(
+        parseICICI(text)
+      );
 
     default:
-      throw new Error("UNSUPPORTED_BANK");
+      throw new Error(
+        "UNSUPPORTED_BANK"
+      );
   }
 }
 
