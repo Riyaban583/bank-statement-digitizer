@@ -1,11 +1,11 @@
 # 🏦 Bank Statement Digitizer
 
-> Automatically extract, parse, and store bank transaction data from PDF statements — with multi-bank support and a searchable dashboard.
+> Automatically extract, parse, and store bank transaction data from PDF statements — with multi-bank support and intelligent detection.
 
-[![React](https://img.shields.io/badge/React-18-61DAFB?style=flat&logo=react)](https://react.dev)
-[![Firebase](https://img.shields.io/badge/Firebase-Firestore-FFCA28?style=flat&logo=firebase)](https://firebase.google.com)
-[![Vite](https://img.shields.io/badge/Vite-build-646CFF?style=flat&logo=vite)](https://vitejs.dev)
-[![TailwindCSS](https://img.shields.io/badge/Tailwind-CSS-38BDF8?style=flat&logo=tailwindcss)](https://tailwindcss.com)
+[![Status](https://img.shields.io/badge/Status-Completed%20%E2%9C%85-brightgreen)](.)
+[![Firebase](https://img.shields.io/badge/Backend-Firebase-orange)](https://firebase.google.com)
+[![React](https://img.shields.io/badge/Frontend-React-blue)](https://react.dev)
+[![Vite](https://img.shields.io/badge/Build-Vite-purple)](https://vitejs.dev)
 
 ---
 
@@ -13,36 +13,64 @@
 
 - [Overview](#overview)
 - [Features](#features)
-- [Tech Stack](#tech-stack)
-- [System Architecture](#system-architecture)
-- [Project Structure](#project-structure)
 - [Supported Banks](#supported-banks)
-- [Parser Dispatcher](#parser-dispatcher)
-- [Firestore Data Model](#firestore-data-model)
+- [Tech Stack](#tech-stack)
+- [Project Structure](#project-structure)
+- [Architecture & Flowcharts](#architecture--flowcharts)
+- [Transaction Schema](#transaction-schema)
+- [Firestore Collections](#firestore-collections)
 - [Installation](#installation)
 - [Environment Variables](#environment-variables)
 - [Testing](#testing)
-- [Project Status](#project-status)
 
 ---
 
 ## Overview
 
-**Bank Statement Digitizer** is a React and Firebase-based application that digitizes bank statement PDFs by extracting raw text using PDF.js, routing it through bank-specific parsers, and persisting structured transaction records in Firebase Firestore.
-
-The application supports multiple Indian bank formats (SBI, HDFC, ICICI) through a modular parser system and includes a dashboard for browsing and searching transactions.
+**Bank Statement Digitizer** is a React and Firebase-based application that extracts transaction data from bank statement PDFs. It automatically identifies the bank, applies the appropriate bank-specific parser, and stores normalized transaction data in Firebase Firestore — all in a seamless pipeline from upload to dashboard.
 
 ---
 
 ## Features
 
-- Upload bank statement PDFs through the browser
-- Extract text content using PDF.js (client-side, no server upload required)
-- Auto-detect bank format and route to the correct parser
-- Parse transactions into a normalized structure (date, description, amount, type)
-- Store parsed records in Firebase Firestore
-- View and search transactions on a dashboard
-- Handle unsupported bank formats gracefully with typed errors
+### 📄 PDF Processing
+- Upload bank statement PDFs via a clean UI
+- Password-protected PDF support
+- PDF text extraction powered by `PDF.js`
+- Robust PDF error handling
+
+### ⚠️ Error Handling
+| Error Code | Description |
+|---|---|
+| `WRONG_PASSWORD` | Incorrect password for a protected PDF |
+| `CORRUPT_PDF` | The PDF file is unreadable or malformed |
+| `UNSUPPORTED_BANK` | Statement format does not match any known bank |
+
+### 🏛️ Multi-Bank Support
+- **SBI** — State Bank of India
+- **HDFC** — HDFC Bank
+- **ICICI** — ICICI Bank
+
+### ⚙️ Transaction Processing
+- Automatic bank detection from statement content
+- Bank-specific transaction parsing
+- Transaction normalization into a unified schema
+- Direct storage to Firebase Firestore
+
+### 📊 Dashboard
+- View all parsed transactions in a clean table
+- Search and filter transactions
+- Real-time Firestore integration
+
+---
+
+## Supported Banks
+
+| Bank | Date Format | Transaction Markers | Parser |
+|---|---|---|---|
+| **SBI** | `DD/MM/YYYY` | `Cr` / `Dr` | `parsers/sbi.js` |
+| **HDFC** | `DD-MM-YYYY` | Column-based structure | `parsers/hdfc.js` |
+| **ICICI** | `DD/MM/YYYY` | Standard row parsing | `parsers/icici.js` |
 
 ---
 
@@ -50,295 +78,317 @@ The application supports multiple Indian bank formats (SBI, HDFC, ICICI) through
 
 | Layer | Technology |
 |---|---|
-| Frontend framework | React 18 + Vite |
-| Styling | Tailwind CSS |
-| Routing | React Router |
-| PDF processing | pdfjs-dist |
-| Backend / Database | Firebase Firestore |
-| Cloud functions | Firebase Functions |
-
----
-
-## System Architecture and design
-
-### End-to-end upload and parsing flow
-
-```
-User uploads PDF
-       │
-       ▼
-PDF.js text extraction
-(client-side, page by page)
-       │
-       ▼
-Parser dispatcher
-(detects bank from statement header)
-       │
-  ┌────┴────────┬──────────────┬────────────────┐
-  ▼             ▼              ▼                 ▼
-sbi.js       hdfc.js        icici.js      UNSUPPORTED_BANK
-(Cr/Dr)    (DD-MM-YYYY)   (DD/MM/YYYY)      (throws error)
-  │             │              │
-  └────┬────────┘──────────────┘
-       ▼
-Parsed Transaction[]
-{ date, description, amount, type, balance }
-       │
-       ▼
-Firebase Firestore
-(transactions / statements / users)
-       │
-       ▼
-Dashboard — browse & search
-```
-
-### Parser dispatcher routing
-
-```
-parseStatement(text, bankCode)
-          │
-          ├── "sbi"   ──► sbi.js
-          ├── "hdfc"  ──► hdfc.js
-          ├── "icici" ──► icici.js
-          └── default ──► throw new Error("UNSUPPORTED_BANK")
-```
-
-### Firestore data relationships
-
-```
-users (1)
-  └── statements (N)
-        └── transactions (N)
-```
+| **Frontend** | React, Vite, Tailwind CSS, React Router |
+| **Backend** | Firebase Firestore, Firebase Functions |
+| **PDF Processing** | `pdfjs-dist` |
 
 ---
 
 ## Project Structure
 
-```
+```text
 bank-statement-digitizer/
 │
 ├── docs/
-│   └── samples.md              # Sample statement format documentation
+│   └── samples.md                  # Sample PDF documentation
 │
 ├── samples/
 │   ├── sbi-sample.pdf
 │   ├── hdfc-sample.pdf
 │   ├── icici-sample.pdf
-│   └── axis-sample.pdf         # Axis Bank (unsupported — used to test error handling)
+│   └── axis-sample.pdf
 │
-├── functions/
-│   ├── index.js                # Firebase Functions entry point
+├── functions/                      # Firebase Cloud Functions
+│   ├── index.js
+│   ├── pdfService.js               # Core PDF processing logic
+│   │
 │   └── parsers/
-│       ├── index.js            # Dispatcher — routes to correct parser
-│       ├── sbi.js              # SBI-specific parser
-│       ├── hdfc.js             # HDFC-specific parser
-│       └── icici.js            # ICICI-specific parser
+│       ├── index.js                # Parser router
+│       ├── sbi.js
+│       ├── hdfc.js
+│       └── icici.js
 │
-├── public/                     # Static assets
+├── src/                            # React frontend
+│   ├── components/
+│   ├── firebase/
+│   ├── pages/
+│   └── services/
 │
-├── src/
-│   ├── components/             # Reusable React components
-│   ├── firebase/               # Firebase init and config
-│   ├── pages/                  # Route-level page components
-│   └── services/               # API and Firestore service modules
-│
-├── .env                        # Local environment variables (git-ignored)
-├── firebase.json               # Firebase hosting + functions config
-├── firestore.rules             # Firestore security rules
+├── firebase.json
+├── firestore.rules
 ├── package.json
 └── README.md
 ```
 
 ---
 
-## Supported Banks
+## Architecture & Flowcharts
 
-### SBI — State Bank of India
+### 1. Full PDF Processing Pipeline
 
-| Property | Value |
-|---|---|
-| Date format | `DD/MM/YYYY` |
-| Transaction markers | `Cr` (credit), `Dr` (debit) |
-| Balance column | Included |
+This is the end-to-end flow from the moment a user uploads a PDF to the point where transactions are saved in Firestore.
 
-**Example row:**
-```
-01/05/2026    Salary Credit    50000    Cr    60000
-```
+```mermaid
+flowchart TD
+    A([🗂️ User Uploads PDF]) --> B[unlockPdf]
+    B --> C{Password\nRequired?}
+    C -- Yes --> D{Correct\nPassword?}
+    D -- No --> E[❌ WRONG_PASSWORD Error]
+    D -- Yes --> F[getPdfItems]
+    C -- No --> F
+    F --> G{PDF\nReadable?}
+    G -- No --> H[❌ CORRUPT_PDF Error]
+    G -- Yes --> I[groupItemsIntoRows]
+    I --> J[detectBank]
+    J --> K{Bank\nIdentified?}
+    K -- No --> L[❌ UNSUPPORTED_BANK Error]
+    K -- SBI --> M[SBI Parser]
+    K -- HDFC --> N[HDFC Parser]
+    K -- ICICI --> O[ICICI Parser]
+    M & N & O --> P[normalizeTransactions]
+    P --> Q[(🔥 Firestore Storage)]
+    Q --> R([✅ Transactions Saved])
 
-### HDFC Bank
-
-| Property | Value |
-|---|---|
-| Date format | `DD-MM-YYYY` |
-| Transaction markers | Inferred from amount position |
-| Balance column | Included |
-
-**Example row:**
-```
-01-05-2026    Salary Credit    50000    60000
-```
-
-### ICICI Bank
-
-| Property | Value |
-|---|---|
-| Date format | `DD/MM/YYYY` |
-| Transaction markers | Inferred from amount position |
-| Balance column | Included |
-
-**Example row:**
-```
-01/05/2026    Salary Credit    50000    60000
+    style A fill:#4A90D9,color:#fff
+    style R fill:#27AE60,color:#fff
+    style E fill:#E74C3C,color:#fff
+    style H fill:#E74C3C,color:#fff
+    style L fill:#E74C3C,color:#fff
+    style Q fill:#F39C12,color:#fff
 ```
 
 ---
 
-## Parser Dispatcher
+### 2. Bank Detection Logic
 
-The dispatcher in `functions/parsers/index.js` selects the correct parser based on the bank code passed at runtime.
+How the system reads statement content and routes to the correct parser.
 
-```js
-// Usage
-parseStatement(text, "sbi");    // Routes to sbi.js
-parseStatement(text, "hdfc");   // Routes to hdfc.js
-parseStatement(text, "icici");  // Routes to icici.js
+```mermaid
+flowchart TD
+    A([Raw PDF Text]) --> B[Scan for Bank Identifiers]
+    B --> C{Keyword Match?}
 
-// Unknown banks throw a typed error
-parseStatement(text, "axis");   // throws Error("UNSUPPORTED_BANK")
-```
+    C --> D{Contains\n'State Bank'\nor 'SBI'?}
+    C --> E{Contains\n'HDFC Bank'?}
+    C --> F{Contains\n'ICICI Bank'?}
 
-Each parser returns an array of normalized transaction objects:
+    D -- Yes --> G[🏦 Route to SBI Parser\nDate: DD/MM/YYYY\nMarkers: Cr / Dr]
+    E -- Yes --> H[🏦 Route to HDFC Parser\nDate: DD-MM-YYYY\nColumn-based]
+    F -- Yes --> I[🏦 Route to ICICI Parser\nDate: DD/MM/YYYY\nRow-based]
 
-```js
-[
-  {
-    date: "2026-05-01",
-    description: "Salary Credit",
-    amount: 50000,
-    type: "credit",       // or "debit"
-    balance: 60000
-  },
-  // ...
-]
+    D -- No --> J{Any\nmatch found?}
+    E -- No --> J
+    F -- No --> J
+
+    J -- No --> K[❌ Throw UNSUPPORTED_BANK]
+    G & H & I --> L([✅ Return Parsed Transactions])
+
+    style A fill:#4A90D9,color:#fff
+    style L fill:#27AE60,color:#fff
+    style K fill:#E74C3C,color:#fff
 ```
 
 ---
 
-## Firestore Data Model
+### 3. Transaction Normalization Flow
 
-### `users` collection
+Each bank parser returns raw data. The normalizer converts it into a unified schema.
 
-Stores authenticated user profile information and security.
+```mermaid
+flowchart LR
+    A([Raw Bank Data]) --> B[Extract Date]
+    A --> C[Extract Description]
+    A --> D[Extract Amount]
+    A --> E[Extract Balance]
+    A --> F[Determine Type\nCredit or Debit]
 
-| Field | Type | Description |
-|---|---|---|
-| `uid` | string | Firebase Auth UID |
-| `email` | string | User email address |
-| `displayName` | string | User display name |
-| `createdAt` | timestamp | Account creation time |
+    B & C & D & E & F --> G[normalizeTransactions]
 
-### `statements` collection
+    G --> H{Validate\nAll Fields?}
+    H -- No --> I[⚠️ Skip / Flag Row]
+    H -- Yes --> J["📦 Normalized Record
+    ─────────────────
+    date: DD/MM/YYYY
+    description: string
+    amount: string
+    type: credit | debit
+    balance: string"]
 
-Stores metadata about each uploaded PDF.
+    J --> K[(🔥 Firestore)]
 
-| Field | Type | Description |
-|---|---|---|
-| `statementId` | string | Auto-generated document ID |
-| `userId` | string | Reference to the uploading user |
-| `bankName` | string | Detected bank name |
-| `uploadedAt` | timestamp | Upload timestamp |
-| `fileName` | string | Original PDF filename |
+    style A fill:#4A90D9,color:#fff
+    style K fill:#F39C12,color:#fff
+    style I fill:#E67E22,color:#fff
+```
 
-### `transactions` collection
+---
 
-Stores individual parsed transaction records.
+### 4. Frontend Application Flow
 
-| Field | Type | Description |
-|---|---|---|
-| `transactionId` | string | Auto-generated document ID |
-| `statementId` | string | Reference to the parent statement |
-| `date` | string | Transaction date (ISO format) |
-| `description` | string | Transaction narration |
-| `amount` | number | Transaction amount |
-| `type` | string | `"credit"` or `"debit"` |
-| `balance` | number | Running balance after transaction |
+How a user interacts with the app from upload to viewing results.
+
+```mermaid
+flowchart TD
+    A([🙋 User Opens App]) --> B[Upload Page]
+    B --> C[Select PDF File]
+    C --> D{Password\nProtected?}
+    D -- Yes --> E[Enter Password]
+    E --> F[Submit for Processing]
+    D -- No --> F
+    F --> G[Call Firebase Function]
+    G --> H{Processing\nResult?}
+
+    H -- Error --> I[Display Error Message\nWRONG_PASSWORD /\nCORRUPT_PDF /\nUNSUPPORTED_BANK]
+    I --> B
+
+    H -- Success --> J[Transactions Stored\nin Firestore]
+    J --> K[Redirect to Dashboard]
+    K --> L[View Transactions Table]
+    L --> M{User Action?}
+    M -- Search --> N[Filter Transactions]
+    N --> L
+    M -- Upload More --> B
+
+    style A fill:#4A90D9,color:#fff
+    style I fill:#E74C3C,color:#fff
+    style J fill:#27AE60,color:#fff
+```
+
+---
+
+### 5. Firestore Data Architecture
+
+```mermaid
+erDiagram
+    USERS {
+        string uid PK
+        string email
+        string displayName
+        timestamp createdAt
+    }
+
+    STATEMENTS {
+        string statementId PK
+        string uid FK
+        string bankName
+        string fileName
+        timestamp uploadedAt
+        string status
+    }
+
+    TRANSACTIONS {
+        string transactionId PK
+        string statementId FK
+        string date
+        string description
+        string amount
+        string type
+        string balance
+    }
+
+    USERS ||--o{ STATEMENTS : "uploads"
+    STATEMENTS ||--o{ TRANSACTIONS : "contains"
+```
+
+---
+
+## Transaction Schema
+
+All bank statements are normalized into a unified format before storage:
+
+```js
+{
+  date: "01/05/2026",          // DD/MM/YYYY — standardized across all banks
+  description: "Salary Credit", // Transaction narration / remarks
+  amount: "50000",              // Transaction amount as string
+  type: "credit",               // "credit" or "debit"
+  balance: "60000"              // Closing balance after transaction
+}
+```
+
+---
+
+## Firestore Collections
+
+| Collection | Purpose |
+|---|---|
+| `users` | Stores registered user information |
+| `statements` | Metadata for each uploaded PDF statement |
+| `transactions` | Normalized transaction records parsed from statements |
 
 ---
 
 ## Installation
 
-**1. Clone the repository**
+**1. Clone the repository:**
 
 ```bash
 git clone https://github.com/your-username/bank-statement-digitizer.git
 cd bank-statement-digitizer
 ```
 
-**2. Install dependencies**
+**2. Install dependencies:**
 
 ```bash
 npm install
 ```
 
-**3. Set up environment variables**
+**3. Set up environment variables** (see section below)
 
-Create a `.env` file in the project root (see [Environment Variables](#environment-variables) below).
-
-**4. Run the development server**
+**4. Run the development server:**
 
 ```bash
 npm run dev
 ```
 
-The application starts at `http://localhost:5173` by default.
+**5. (Optional) Deploy Firebase Functions:**
+
+```bash
+firebase deploy --only functions
+```
 
 ---
 
 ## Environment Variables
 
-Create a `.env` file in the project root and populate it with your Firebase project credentials:
+Create a `.env` file in the project root with the following keys from your [Firebase Console](https://console.firebase.google.com):
 
 ```env
-VITE_FIREBASE_API_KEY=your_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
 ```
 
-The `.env` file is listed in `.gitignore` and is never committed to version control.
-
-> Find these values in the Firebase Console under **Project Settings → General → Your apps**.
+> ⚠️ The `.env` file is listed in `.gitignore` and is never committed to version control.
 
 ---
 
 ## Testing
 
-All core modules have been tested and verified.
+### ✅ Test Coverage Summary
 
-| Area | Status |
-|---|---|
-| PDF upload | ✅ Passed |
-| PDF text extraction (PDF.js) | ✅ Passed |
-| Firestore save | ✅ Passed |
-| Firestore read | ✅ Passed |
-| SBI parser | ✅ Passed |
-| HDFC parser | ✅ Passed |
-| ICICI parser | ✅ Passed |
-| Dispatcher routing | ✅ Passed |
-| Unsupported bank error | ✅ Passed |
+| Module | Test | Status |
+|---|---|---|
+| **PDF Module** | PDF Upload | ✅ Passed |
+| | Password Handling | ✅ Passed |
+| | PDF Parsing | ✅ Passed |
+| **Firestore** | Save Transactions | ✅ Passed |
+| | Read Transactions | ✅ Passed |
+| **Parsers** | SBI Parser | ✅ Passed |
+| | HDFC Parser | ✅ Passed |
+| | ICICI Parser | ✅ Passed |
+| **Validation** | `WRONG_PASSWORD` | ✅ Passed |
+| | `CORRUPT_PDF` | ✅ Passed |
+| | `UNSUPPORTED_BANK` | ✅ Passed |
+| **End-to-End** | Upload → Parse → Normalize → Store | ✅ Passed |
 
 ---
 
 ## Project Status
 
-✅ **Completed** as part of the Bank Statement Digitizer internship assignment.
+> ✅ **Completed** — Built and tested as part of the Bank Statement Digitizer internship assignment.
 
-All features have been implemented, tested, and verified. The application handles supported bank formats correctly and rejects unsupported formats with a typed error. 
-
----
-
-*Built with React, Firebase, PDF.js, and Tailwind CSS.*
+All planned features have been implemented, tested, and verified end-to-end.
