@@ -1,51 +1,196 @@
-{
-  // Example (Standard Edition):
-  //
-  // "indexes": [
-  //   {
-  //     "collectionGroup": "widgets",
-  //     "queryScope": "COLLECTION",
-  //     "fields": [
-  //       { "fieldPath": "foo", "arrayConfig": "CONTAINS" },
-  //       { "fieldPath": "bar", "mode": "DESCENDING" }
-  //     ]
-  //   },
-  //
-  //  "fieldOverrides": [
-  //    {
-  //      "collectionGroup": "widgets",
-  //      "fieldPath": "baz",
-  //      "indexes": [
-  //        { "order": "ASCENDING", "queryScope": "COLLECTION" }
-  //      ]
-  //    },
-  //   ]
-  // ]
-  //
-  // Example (Enterprise Edition):
-  //
-  // "indexes": [
-  //   {
-  //     "collectionGroup": "reviews",
-  //     "queryScope": "COLLECTION_GROUP",
-  //     "apiScope": "MONGODB_COMPATIBLE_API",
-  //     "density": "DENSE",
-  //     "multikey": false,
-  //     "fields": [
-  //       { "fieldPath": "baz", "mode": "ASCENDING" }
-  //     ]
-  //   },
-  //   {
-  //     "collectionGroup": "items",
-  //     "queryScope": "COLLECTION_GROUP",
-  //     "apiScope": "MONGODB_COMPATIBLE_API",
-  //     "density": "SPARSE_ANY",
-  //     "multikey": true,
-  //     "fields": [
-  //       { "fieldPath": "baz", "mode": "ASCENDING" }
-  //     ]
-  //   },
-  // ]
-  "indexes": [],
-  "fieldOverrides": []
-}
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  writeBatch,
+  doc,
+  query,
+  where,
+  orderBy,
+  limit,
+  getDocs,
+  startAfter,
+} from "firebase/firestore";
+
+import CryptoJS from "crypto-js";
+
+import { db } from "../firebase/firebaseConfig";
+
+export const createStatement = async ({
+  bank,
+  userId,
+  transactionCount,
+}) => {
+  try {
+    const docRef = await addDoc(
+      collection(db, "statements"),
+      {
+        bank,
+        userId,
+        transactionCount,
+        uploadedAt: serverTimestamp(),
+      }
+    );
+
+    return docRef.id;
+  } catch (error) {
+    console.error(
+      "Error creating statement:",
+      error
+    );
+    throw error;
+  }
+};
+
+const generateTransactionId = (
+  transaction
+) => {
+  const rawString = `${transaction.date}-${transaction.description}-${transaction.amount}`;
+
+  return CryptoJS.SHA256(
+    rawString
+  ).toString();
+};
+
+export const saveTransactionsBatch =
+  async (
+    transactions,
+    statementId
+  ) => {
+    try {
+      const batchSize = 500;
+
+      for (
+        let i = 0;
+        i < transactions.length;
+        i += batchSize
+      ) {
+        const batch =
+          writeBatch(db);
+
+        const chunk =
+          transactions.slice(
+            i,
+            i + batchSize
+          );
+
+        chunk.forEach(
+          (transaction) => {
+            const transactionId =
+              generateTransactionId(
+                transaction
+              );
+
+            const transactionRef =
+              doc(
+                db,
+                "transactions",
+                transactionId
+              );
+
+            batch.set(
+              transactionRef,
+              {
+                ...transaction,
+                statementId,
+              }
+            );
+          }
+        );
+
+        await batch.commit();
+      }
+
+      console.log(
+        "Transactions saved successfully"
+      );
+    } catch (error) {
+      console.error(
+        "Error saving transactions:",
+        error
+      );
+
+      throw error;
+    }
+  };
+
+export const listTransactions =
+  async ({
+    statementId = null,
+    type = null,
+    lastDoc = null,
+    pageSize = 20,
+  } = {}) => {
+    try {
+      const constraints = [];
+
+      if (statementId) {
+        constraints.push(
+          where(
+            "statementId",
+            "==",
+            statementId
+          )
+        );
+      }
+
+      if (type) {
+        constraints.push(
+          where(
+            "type",
+            "==",
+            type
+          )
+        );
+      }
+
+      constraints.push(
+        orderBy("date", "desc")
+      );
+
+      constraints.push(
+        limit(pageSize)
+      );
+
+      if (lastDoc) {
+        constraints.push(
+          startAfter(lastDoc)
+        );
+      }
+
+      const q = query(
+        collection(
+          db,
+          "transactions"
+        ),
+        ...constraints
+      );
+
+      const snapshot =
+        await getDocs(q);
+
+      const transactions =
+        snapshot.docs.map(
+          (document) => ({
+            id: document.id,
+            ...document.data(),
+          })
+        );
+
+      return {
+        transactions,
+        lastDoc:
+          snapshot.docs[
+            snapshot.docs.length -
+              1
+          ] || null,
+      };
+    } catch (error) {
+      console.error(
+        "Error fetching transactions:",
+        error
+      );
+
+      throw error;
+    }
+  };

@@ -1,7 +1,10 @@
 import { useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import { parseTransactions } from "../services/transactionParser";
-import { saveTransactions } from "../services/firestoreService";
+import {
+  createStatement,
+  saveTransactionsBatch,
+} from "../services/firestoreService";
 
 // PDF Worker Setup
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -64,8 +67,26 @@ export default function UploadForm() {
       console.log("Transactions:");
       console.log(parsedTransactions);
 
+      console.log(
+  "Transaction Count:",
+  parsedTransactions.length
+);
+
       // Save to Firestore
-      await saveTransactions(parsedTransactions);
+     // Create Statement Document
+const statementId =
+  await createStatement({
+    bank: "sbi",
+    userId: "test-user",
+    transactionCount:
+      parsedTransactions.length,
+  });
+
+// Save Transactions in Batch
+await saveTransactionsBatch(
+  parsedTransactions,
+  statementId
+);
 
       alert(
         `PDF Loaded Successfully (${pdf.numPages} pages)`
