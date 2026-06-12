@@ -1,6 +1,7 @@
 import { useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
 import { parseTransactions } from "../services/transactionParser";
+import { auth } from "../firebase/firebaseConfig";
 import {
   createStatement,
   saveTransactionsBatch,
@@ -186,15 +187,15 @@ const handleDragLeave = () => {
       const statementId =
         await createStatement({
           bank: "sbi",
-          userId:
-            "test-user",
+         userId: auth.currentUser.uid,
           transactionCount:
             parsedTransactions.length,
         });
 
       await saveTransactionsBatch(
         parsedTransactions,
-        statementId
+        statementId,
+        auth.currentUser.uid
       );
 
       setProgress(100);

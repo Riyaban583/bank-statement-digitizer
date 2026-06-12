@@ -1,21 +1,80 @@
 import { useEffect, useState } from "react";
-import { collection, getDocs } from "firebase/firestore";
 import { db } from "../firebase/firebaseConfig";
+import Navbar from "../components/Navbar";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
+
+import { auth } from "../firebase/firebaseConfig";
+import * as XLSX from "xlsx";
+import { useSearchParams } from "react-router-dom";
 
 export default function Transactions() {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [searchParams] =
+  useSearchParams();
+
+const statementId =
+  searchParams.get(
+    "statementId"
+  );
 
   useEffect(() => {
     fetchTransactions();
   }, []);
 
   const fetchTransactions = async () => {
-    try {
-      const querySnapshot = await getDocs(
-        collection(db, "transactions")
+  try {
+
+    console.log(
+      "statementId =",
+      statementId
+    );
+
+    console.log(
+      "userId =",
+      auth.currentUser.uid
+    );
+
+    let q;
+
+    if (statementId) {
+      q = query(
+        collection(db, "transactions"),
+        where(
+          "userId",
+          "==",
+          auth.currentUser.uid
+        ),
+        where(
+          "statementId",
+          "==",
+          statementId
+        )
       );
+    } else {
+      q = query(
+        collection(db, "transactions"),
+        where(
+          "userId",
+          "==",
+          auth.currentUser.uid
+        )
+      );
+    }
+
+    const querySnapshot =
+      await getDocs(q);
+
+    console.log(
+      "Docs Found:",
+      querySnapshot.docs.length
+    );
 
       const data = querySnapshot.docs.map((doc) => ({
         id: doc.id,
@@ -39,6 +98,25 @@ export default function Transactions() {
       .includes(searchTerm.toLowerCase())
   );
 
+  const exportToExcel = () => {
+  const worksheet = XLSX.utils.json_to_sheet(
+    filteredTransactions
+  );
+
+  const workbook = XLSX.utils.book_new();
+
+  XLSX.utils.book_append_sheet(
+    workbook,
+    worksheet,
+    "Transactions"
+  );
+
+  XLSX.writeFile(
+    workbook,
+    "transactions.xlsx"
+  );
+};
+
   const totalDebit = filteredTransactions.reduce(
     (sum, txn) => sum + Number(txn.debit || 0),
     0
@@ -57,6 +135,8 @@ export default function Transactions() {
       : 0;
 
   return (
+     <>
+    <Navbar />
     <div className="min-h-screen bg-slate-100 p-6">
       <div className="max-w-7xl mx-auto">
 
@@ -131,6 +211,14 @@ export default function Transactions() {
             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+        <div className="mb-6">
+  <button
+    onClick={exportToExcel}
+    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow-md"
+  >
+    Export Excel
+  </button>
+</div>
 
         {/* Table */}
         <div className="bg-white rounded-xl shadow-md overflow-hidden">
@@ -225,5 +313,6 @@ export default function Transactions() {
 
       </div>
     </div>
+    </>
   );
 } 

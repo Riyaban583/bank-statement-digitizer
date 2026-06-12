@@ -51,7 +51,8 @@ const generateTransactionId = (
 export const saveTransactionsBatch =
   async (
     transactions,
-    statementId
+    statementId,
+    userId
   ) => {
     try {
       const batchSize = 500;
@@ -89,6 +90,7 @@ export const saveTransactionsBatch =
               {
                 ...transaction,
                 statementId,
+                 userId,
               }
             );
           }

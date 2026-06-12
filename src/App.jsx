@@ -3,18 +3,54 @@ import app from "./firebase/firebaseConfig";
 
 import Upload from "./pages/Upload";
 import Transactions from "./pages/Transactions";
-import Navbar from "./components/Navbar";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+
+import ProtectedRoute from "./components/ProtectedRoute";
+import Statements from "./pages/Statements";
 
 console.log(app);
 
 function App() {
   return (
     <BrowserRouter>
-      <Navbar />
-
       <Routes>
-        <Route path="/" element={<Upload />} />
-        <Route path="/transactions" element={<Transactions />} />
+        <Route
+          path="/"
+          element={
+            <ProtectedRoute>
+              <Upload />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/transactions"
+          element={
+            <ProtectedRoute>
+              <Transactions />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+  path="/statements"
+  element={
+    <ProtectedRoute>
+      <Statements />
+    </ProtectedRoute>
+  }
+/>
+
+        <Route
+          path="/login"
+          element={<Login />}
+        />
+
+        <Route
+          path="/signup"
+          element={<Signup />}
+        />
       </Routes>
     </BrowserRouter>
   );
