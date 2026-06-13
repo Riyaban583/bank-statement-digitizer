@@ -1,394 +1,426 @@
-# 🏦 Bank Statement Digitizer
+<div align="center">
 
-> Automatically extract, parse, and store bank transaction data from PDF statements — with multi-bank support and intelligent detection.
+<br/>
 
-[![Status](https://img.shields.io/badge/Status-Completed%20%E2%9C%85-brightgreen)](.)
-[![Firebase](https://img.shields.io/badge/Backend-Firebase-orange)](https://firebase.google.com)
-[![React](https://img.shields.io/badge/Frontend-React-blue)](https://react.dev)
-[![Vite](https://img.shields.io/badge/Build-Vite-purple)](https://vitejs.dev)
+```
+██████╗  █████╗ ███╗   ██╗██╗  ██╗    ███████╗████████╗ █████╗ ████████╗███████╗
+██╔══██╗██╔══██╗████╗  ██║██║ ██╔╝    ██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██╔════╝
+██████╔╝███████║██╔██╗ ██║█████╔╝     ███████╗   ██║   ███████║   ██║   █████╗  
+██╔══██╗██╔══██║██║╚██╗██║██╔═██╗     ╚════██║   ██║   ██╔══██║   ██║   ██╔══╝  
+██████╔╝██║  ██║██║ ╚████║██║  ██╗    ███████║   ██║   ██║  ██║   ██║   ███████╗
+╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝   ╚══════╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚══════╝
+
+██████╗ ██╗ ██████╗ ██╗████████╗██╗███████╗███████╗██████╗ 
+██╔══██╗██║██╔════╝ ██║╚══██╔══╝██║╚══███╔╝██╔════╝██╔══██╗
+██║  ██║██║██║  ███╗██║   ██║   ██║  ███╔╝ █████╗  ██████╔╝
+██║  ██║██║██║   ██║██║   ██║   ██║ ███╔╝  ██╔══╝  ██╔══██╗
+██████╔╝██║╚██████╔╝██║   ██║   ██║███████╗███████╗██║  ██║
+╚═════╝ ╚═╝ ╚═════╝ ╚═╝   ╚═╝   ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝
+```
+
+**Upload · Parse · Analyze · Export**
+
+[![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://reactjs.org/)
+[![Firebase](https://img.shields.io/badge/Firebase-Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+[![Vite](https://img.shields.io/badge/Vite-5.x-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![License](https://img.shields.io/badge/License-Portfolio-green?style=for-the-badge)](./LICENSE)
+
+<br/>
+
+> A full-stack React + Firebase web application that transforms your bank statement PDFs into structured, searchable, and exportable transaction data — all through a clean, responsive dashboard.
+
+<br/>
 
 ---
 
-## 📋 Table of Contents
+</div>
 
-- [Overview](#overview)
-- [Features](#features)
-- [Supported Banks](#supported-banks)
-- [Tech Stack](#tech-stack)
-- [Project Structure](#project-structure)
-- [Architecture & Flowcharts](#architecture--flowcharts)
-- [Transaction Schema](#transaction-schema)
-- [Firestore Collections](#firestore-collections)
-- [Installation](#installation)
-- [Environment Variables](#environment-variables)
-- [Testing](#testing)
+## 📸 Screenshots
+
+<br/>
+
+### 🔐 Authentication
+
+<div align="center">
+
+| Login Page | Signup Page |
+|:---:|:---:|
+| ![Login](https://via.placeholder.com/500x320/1e293b/60a5fa?text=Login+Screen) | ![Signup](https://via.placeholder.com/500x320/1e293b/60a5fa?text=Signup+Screen) |
+| Secure email/password login via Firebase Auth | Create your account in seconds |
+
+</div>
+
+<br/>
+
+### 📤 PDF Upload
+
+<div align="center">
+
+![Upload](https://via.placeholder.com/900x400/0f172a/38bdf8?text=PDF+Upload+with+Drag+%26+Drop+%7C+Progress+Indicator+%7C+Password+Support)
+
+*Drag & drop or click to upload your bank statement PDF. Supports password-protected files and real-time upload progress.*
+
+</div>
+
+<br/>
+
+### 📊 Transactions Dashboard
+
+<div align="center">
+
+![Dashboard](https://via.placeholder.com/900x500/0f172a/34d399?text=Transaction+Dashboard+%7C+Summary+Cards+%7C+Search+%7C+Paginated+Table)
+
+*Full-featured transactions dashboard with summary cards, live search, running balance, and pagination controls.*
+
+</div>
+
+<br/>
+
+### 🗂️ Statements Manager
+
+<div align="center">
+
+![Statements](https://via.placeholder.com/900x400/0f172a/f472b6?text=Statement+List+%7C+Filter+by+Statement+%7C+Transaction+Count)
+
+*View all uploaded statements and drill into individual statement transactions using the statement selector dropdown.*
+
+</div>
+
+<br/>
 
 ---
 
-## Overview
+## ✨ Features
 
-**Bank Statement Digitizer** is a React and Firebase-based application that extracts transaction data from bank statement PDFs. It automatically identifies the bank, applies the appropriate bank-specific parser, and stores normalized transaction data in Firebase Firestore — all in a seamless pipeline from upload to dashboard.
+<br/>
 
----
+### 🔐 Authentication
+- User **Signup** & **Login** via Firebase Authentication
+- **Protected routes** — unauthenticated users are redirected
+- Persistent session with **Logout** functionality
 
-## Features
+<br/>
 
-### 📄 PDF Processing
-- Upload bank statement PDFs via a clean UI
-- Password-protected PDF support
-- PDF text extraction powered by `PDF.js`
-- Robust PDF error handling
+### 📤 PDF Statement Upload
 
-### ⚠️ Error Handling
-| Error Code | Description |
+| Feature | Details |
 |---|---|
-| `WRONG_PASSWORD` | Incorrect password for a protected PDF |
-| `CORRUPT_PDF` | The PDF file is unreadable or malformed |
-| `UNSUPPORTED_BANK` | Statement format does not match any known bank |
+| **Drag & Drop** | Intuitive file drop zone for quick uploads |
+| **Password Support** | Handles password-protected PDFs using CryptoJS |
+| **File Validation** | PDF-only, max **20 MB** |
+| **Progress Indicator** | Real-time upload progress feedback |
+| **Error Handling** | Detects unsupported banks, invalid PDFs & wrong passwords |
 
-### 🏛️ Multi-Bank Support
-- **SBI** — State Bank of India
-- **HDFC** — HDFC Bank
-- **ICICI** — ICICI Bank
+<br/>
 
-### ⚙️ Transaction Processing
-- Automatic bank detection from statement content
-- Bank-specific transaction parsing
-- Transaction normalization into a unified schema
-- Direct storage to Firebase Firestore
+### 🔍 Transaction Parsing
 
-### 📊 Dashboard
-- View all parsed transactions in a clean table
-- Search and filter transactions
-- Real-time Firestore integration
+Transactions are automatically extracted from PDFs with the following fields:
+
+```
+Date  ·  Description  ·  Debit  ·  Credit  ·  Balance
+```
+
+<br/>
+
+### 🔥 Firebase Integration
+
+```
+statements    →  Bank name · userId · transactionCount · uploadedAt
+transactions  →  date · description · debit · credit · balance · statementId · userId
+```
+
+- Batch uploads for performance
+- User-scoped queries (no cross-user data access)
+- Statement metadata stored separately from transactions
+
+<br/>
+
+### 📊 Transactions Dashboard
+
+- **Search** transactions by description (live filter)
+- **Running balance** display column
+- **4 Summary Cards**: Total Transactions · Total Debit · Total Credit · Current Balance
+- **Statement selector** dropdown for filtering by individual uploads
+
+<br/>
+
+### 📄 Pagination
+
+| Option | Records per page |
+|---|:---:|
+| Small | 10 |
+| Medium | 25 |
+| Large | 50 |
+| XL | 100 |
+
+Previous / Next navigation with dynamic page count display.
+
+<br/>
+
+### 📥 Export
+
+Export all or filtered transactions to a **`.xlsx`** Excel file with a single click — powered by the SheetJS library.
+
+<br/>
 
 ---
 
-## Supported Banks
+## 🛠️ Tech Stack
 
-| Bank | Date Format | Transaction Markers | Parser |
-|---|---|---|---|
-| **SBI** | `DD/MM/YYYY` | `Cr` / `Dr` | `parsers/sbi.js` |
-| **HDFC** | `DD-MM-YYYY` | Column-based structure | `parsers/hdfc.js` |
-| **ICICI** | `DD/MM/YYYY` | Standard row parsing | `parsers/icici.js` |
+<br/>
 
----
+```
+Frontend          React.js · React Router DOM · Tailwind CSS
+Auth & Database   Firebase Authentication · Firebase Firestore
+PDF Parsing       PDF.js
+Excel Export      XLSX (SheetJS)
+Security          CryptoJS (PDF password decryption)
+Notifications     React Toastify
+Build Tool        Vite
+```
 
-## Tech Stack
-
-| Layer | Technology |
-|---|---|
-| **Frontend** | React, Vite, Tailwind CSS, React Router |
-| **Backend** | Firebase Firestore, Firebase Functions |
-| **PDF Processing** | `pdfjs-dist` |
+<br/>
 
 ---
 
-## Project Structure
+## 📂 Project Structure
 
-```text
+```
 bank-statement-digitizer/
 │
-├── docs/
-│   └── samples.md                  # Sample PDF documentation
-│
-├── samples/
-│   ├── sbi-sample.pdf
-│   ├── hdfc-sample.pdf
-│   ├── icici-sample.pdf
-│   └── axis-sample.pdf
-│
-├── functions/                      # Firebase Cloud Functions
-│   ├── index.js
-│   ├── pdfService.js               # Core PDF processing logic
-│   │
-│   └── parsers/
-│       ├── index.js                # Parser router
-│       ├── sbi.js
-│       ├── hdfc.js
-│       └── icici.js
-│
-├── src/                            # React frontend
+├── public/
+├── src/
 │   ├── components/
-│   ├── firebase/
+│   │   ├── Navbar.jsx           # Top navigation bar with logout
+│   │   ├── ProtectedRoute.jsx   # Auth guard for private routes
+│   │   └── UploadForm.jsx       # PDF upload with drag & drop
+│   │
 │   ├── pages/
-│   └── services/
+│   │   ├── Login.jsx            # Firebase email/password login
+│   │   ├── Signup.jsx           # New account registration
+│   │   ├── Upload.jsx           # PDF upload page
+│   │   ├── Transactions.jsx     # Main dashboard with table & search
+│   │   └── Statements.jsx       # Statement list & filter page
+│   │
+│   ├── services/
+│   │   ├── firestoreService.js  # Firestore CRUD operations
+│   │   └── transactionParser.js # PDF.js extraction logic
+│   │
+│   ├── firebase/
+│   │   └── firebaseConfig.js    # Firebase SDK initialization
+│   │
+│   ├── App.jsx                  # Route definitions
+│   └── main.jsx                 # React entry point
 │
-├── firebase.json
-├── firestore.rules
-├── package.json
-└── README.md
+├── .env                         # Environment variables (not committed)
+├── index.html
+├── vite.config.js
+└── package.json
 ```
 
----
-
-## Architecture & Flowcharts
-
-### 1. Full PDF Processing Pipeline
-
-This is the end-to-end flow from the moment a user uploads a PDF to the point where transactions are saved in Firestore.
-
-```mermaid
-flowchart TD
-    A([🗂️ User Uploads PDF]) --> B[unlockPdf]
-    B --> C{Password\nRequired?}
-    C -- Yes --> D{Correct\nPassword?}
-    D -- No --> E[❌ WRONG_PASSWORD Error]
-    D -- Yes --> F[getPdfItems]
-    C -- No --> F
-    F --> G{PDF\nReadable?}
-    G -- No --> H[❌ CORRUPT_PDF Error]
-    G -- Yes --> I[groupItemsIntoRows]
-    I --> J[detectBank]
-    J --> K{Bank\nIdentified?}
-    K -- No --> L[❌ UNSUPPORTED_BANK Error]
-    K -- SBI --> M[SBI Parser]
-    K -- HDFC --> N[HDFC Parser]
-    K -- ICICI --> O[ICICI Parser]
-    M & N & O --> P[normalizeTransactions]
-    P --> Q[(🔥 Firestore Storage)]
-    Q --> R([✅ Transactions Saved])
-
-    style A fill:#4A90D9,color:#fff
-    style R fill:#27AE60,color:#fff
-    style E fill:#E74C3C,color:#fff
-    style H fill:#E74C3C,color:#fff
-    style L fill:#E74C3C,color:#fff
-    style Q fill:#F39C12,color:#fff
-```
+<br/>
 
 ---
 
-### 2. Bank Detection Logic
+## ⚙️ Installation & Setup
 
-How the system reads statement content and routes to the correct parser.
+<br/>
 
-```mermaid
-flowchart TD
-    A([Raw PDF Text]) --> B[Scan for Bank Identifiers]
-    B --> C{Keyword Match?}
-
-    C --> D{Contains\n'State Bank'\nor 'SBI'?}
-    C --> E{Contains\n'HDFC Bank'?}
-    C --> F{Contains\n'ICICI Bank'?}
-
-    D -- Yes --> G[🏦 Route to SBI Parser\nDate: DD/MM/YYYY\nMarkers: Cr / Dr]
-    E -- Yes --> H[🏦 Route to HDFC Parser\nDate: DD-MM-YYYY\nColumn-based]
-    F -- Yes --> I[🏦 Route to ICICI Parser\nDate: DD/MM/YYYY\nRow-based]
-
-    D -- No --> J{Any\nmatch found?}
-    E -- No --> J
-    F -- No --> J
-
-    J -- No --> K[❌ Throw UNSUPPORTED_BANK]
-    G & H & I --> L([✅ Return Parsed Transactions])
-
-    style A fill:#4A90D9,color:#fff
-    style L fill:#27AE60,color:#fff
-    style K fill:#E74C3C,color:#fff
-```
-
----
-
-### 3. Transaction Normalization Flow
-
-Each bank parser returns raw data. The normalizer converts it into a unified schema.
-
-```mermaid
-flowchart LR
-    A([Raw Bank Data]) --> B[Extract Date]
-    A --> C[Extract Description]
-    A --> D[Extract Amount]
-    A --> E[Extract Balance]
-    A --> F[Determine Type\nCredit or Debit]
-
-    B & C & D & E & F --> G[normalizeTransactions]
-
-    G --> H{Validate\nAll Fields?}
-    H -- No --> I[⚠️ Skip / Flag Row]
-    H -- Yes --> J["📦 Normalized Record
-    ─────────────────
-    date: DD/MM/YYYY
-    description: string
-    amount: string
-    type: credit | debit
-    balance: string"]
-
-    J --> K[(🔥 Firestore)]
-
-    style A fill:#4A90D9,color:#fff
-    style K fill:#F39C12,color:#fff
-    style I fill:#E67E22,color:#fff
-```
-
----
-
-### 4. Frontend Application Flow
-
-How a user interacts with the app from upload to viewing results.
-
-```mermaid
-flowchart TD
-    A([🙋 User Opens App]) --> B[Upload Page]
-    B --> C[Select PDF File]
-    C --> D{Password\nProtected?}
-    D -- Yes --> E[Enter Password]
-    E --> F[Submit for Processing]
-    D -- No --> F
-    F --> G[Call Firebase Function]
-    G --> H{Processing\nResult?}
-
-    H -- Error --> I[Display Error Message\nWRONG_PASSWORD /\nCORRUPT_PDF /\nUNSUPPORTED_BANK]
-    I --> B
-
-    H -- Success --> J[Transactions Stored\nin Firestore]
-    J --> K[Redirect to Dashboard]
-    K --> L[View Transactions Table]
-    L --> M{User Action?}
-    M -- Search --> N[Filter Transactions]
-    N --> L
-    M -- Upload More --> B
-
-    style A fill:#4A90D9,color:#fff
-    style I fill:#E74C3C,color:#fff
-    style J fill:#27AE60,color:#fff
-```
-
----
-
-### 5. Firestore Data Architecture
-
-```mermaid
-erDiagram
-    USERS {
-        string uid PK
-        string email
-        string displayName
-        timestamp createdAt
-    }
-
-    STATEMENTS {
-        string statementId PK
-        string uid FK
-        string bankName
-        string fileName
-        timestamp uploadedAt
-        string status
-    }
-
-    TRANSACTIONS {
-        string transactionId PK
-        string statementId FK
-        string date
-        string description
-        string amount
-        string type
-        string balance
-    }
-
-    USERS ||--o{ STATEMENTS : "uploads"
-    STATEMENTS ||--o{ TRANSACTIONS : "contains"
-```
-
----
-
-## Transaction Schema
-
-All bank statements are normalized into a unified format before storage:
-
-```js
-{
-  date: "01/05/2026",          // DD/MM/YYYY — standardized across all banks
-  description: "Salary Credit", // Transaction narration / remarks
-  amount: "50000",              // Transaction amount as string
-  type: "credit",               // "credit" or "debit"
-  balance: "60000"              // Closing balance after transaction
-}
-```
-
----
-
-## Firestore Collections
-
-| Collection | Purpose |
-|---|---|
-| `users` | Stores registered user information |
-| `statements` | Metadata for each uploaded PDF statement |
-| `transactions` | Normalized transaction records parsed from statements |
-
----
-
-## Installation
-
-**1. Clone the repository:**
+### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/bank-statement-digitizer.git
+git clone <your-repository-url>
 cd bank-statement-digitizer
 ```
 
-**2. Install dependencies:**
+<br/>
+
+### 2. Install Dependencies
 
 ```bash
 npm install
 ```
 
-**3. Set up environment variables** (see section below)
+<br/>
 
-**4. Run the development server:**
+### 3. Configure Environment Variables
+
+Create a `.env` file in the project root:
+
+```env
+VITE_FIREBASE_API_KEY=your_api_key
+VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
+VITE_FIREBASE_PROJECT_ID=your_project_id
+VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+VITE_FIREBASE_APP_ID=your_app_id
+```
+
+> ⚠️ **Never commit your `.env` file.** Add it to `.gitignore`.
+
+<br/>
+
+### 4. Run the Development Server
 
 ```bash
 npm run dev
 ```
 
-**5. (Optional) Deploy Firebase Functions:**
+App will be available at → **http://localhost:5173**
 
-```bash
-firebase deploy --only functions
+<br/>
+
+---
+
+## 🔥 Firebase Setup
+
+<br/>
+
+### Authentication
+
+In the Firebase Console → **Authentication** → **Sign-in method**, enable:
+
+```
+✅ Email/Password
 ```
 
----
+<br/>
 
-## Environment Variables
+### Firestore Database
 
-Create a `.env` file in the project root with the following keys from your [Firebase Console](https://console.firebase.google.com):
+Create the following collections:
 
-```env
-VITE_FIREBASE_API_KEY=
-VITE_FIREBASE_AUTH_DOMAIN=
-VITE_FIREBASE_PROJECT_ID=
-VITE_FIREBASE_STORAGE_BUCKET=
-VITE_FIREBASE_MESSAGING_SENDER_ID=
-VITE_FIREBASE_APP_ID=
+```
+📁 statements
+📁 transactions
 ```
 
-> ⚠️ The `.env` file is listed in `.gitignore` and is never committed to version control.
+<br/>
+
+### Firestore Security Rules (Recommended)
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    match /statements/{docId} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == resource.data.userId;
+    }
+
+    match /transactions/{docId} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == resource.data.userId;
+    }
+  }
+}
+```
+
+<br/>
 
 ---
 
-## Testing
+## 📊 Firestore Data Schema
 
-### ✅ Test Coverage Summary
+<br/>
 
-| Module | Test | Status |
-|---|---|---|
-| **PDF Module** | PDF Upload | ✅ Passed |
-| | Password Handling | ✅ Passed |
-| | PDF Parsing | ✅ Passed |
-| **Firestore** | Save Transactions | ✅ Passed |
-| | Read Transactions | ✅ Passed |
-| **Parsers** | SBI Parser | ✅ Passed |
-| | HDFC Parser | ✅ Passed |
-| | ICICI Parser | ✅ Passed |
-| **Validation** | `WRONG_PASSWORD` | ✅ Passed |
-| | `CORRUPT_PDF` | ✅ Passed |
-| | `UNSUPPORTED_BANK` | ✅ Passed |
-| **End-to-End** | Upload → Parse → Normalize → Store | ✅ Passed |
+### `statements` collection
+
+```json
+{
+  "bank": "sbi",
+  "userId": "firebase_user_uid",
+  "transactionCount": 120,
+  "uploadedAt": "2026-05-01T10:30:00Z"
+}
+```
+
+<br/>
+
+### `transactions` collection
+
+```json
+{
+  "date": "01/05/2026",
+  "description": "UPI Payment to Zomato",
+  "debit": 499.00,
+  "credit": 0,
+  "balance": 24501.00,
+  "statementId": "statement_firestore_doc_id",
+  "userId": "firebase_user_uid"
+}
+```
+
+<br/>
 
 ---
 
-## Project Status
+## 🔒 Security
 
-> ✅ **Completed** — Built and tested as part of the Bank Statement Digitizer internship assignment.
+| Layer | Implementation |
+|---|---|
+| **API Keys** | Stored in `.env`, never exposed in source |
+| **Authentication** | Firebase Auth — all routes protected |
+| **Data Access** | Firestore queries scoped to `userId` |
+| **Route Protection** | `ProtectedRoute` component with redirect |
 
-All planned features have been implemented, tested, and verified end-to-end.
+<br/>
+
+---
+
+## 🗺️ Roadmap
+
+```
+✅  Core features (Upload · Parse · Store · Dashboard · Export)
+
+🔜  Multi-bank support (HDFC, ICICI, Axis, Kotak, etc.)
+🔜  Advanced analytics (Monthly trends, category breakdown)
+🔜  Transaction categorization (Food · Travel · Shopping · EMI)
+🔜  Pie charts & bar graphs (Recharts / Chart.js)
+🔜  PDF Export of filtered transactions
+🔜  Statement deletion
+🔜  Dark mode toggle
+```
+
+<br/>
+
+---
+
+## 👩‍💻 Author
+
+<div align="center">
+
+### Riya Bansal
+
+**Frontend Developer · React Developer · Firebase Enthusiast**
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=for-the-badge&logo=linkedin)](https://linkedin.com/)
+[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=for-the-badge&logo=github)](https://github.com/)
+[![Portfolio](https://img.shields.io/badge/Portfolio-Visit-FF5722?style=for-the-badge&logo=firefox)](https://your-portfolio.com/)
+
+</div>
+
+<br/>
+
+---
+
+## 📄 License
+
+This project is developed for **learning, internship tasks, and portfolio purposes**.
+
+Feel free to explore, fork, and build upon it — a credit or star ⭐ is always appreciated!
+
+<br/>
+
+<div align="center">
+
+---
+
+Made with ❤️ by **Riya Bansal**
+
+*If this project helped you, consider giving it a ⭐ on GitHub!*
+
+</div>
