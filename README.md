@@ -480,46 +480,6 @@ git push origin feature/your-feature-name
 | `refactor:` | Code restructuring |
 | `chore:` | Dependencies, config updates |
 
----
-
-## 👩‍💻 Author
-
-<div align="center">
-
-<br/>
-
-<img src="https://via.placeholder.com/120x120/0f172a/60a5fa?text=RB" width="90" style="border-radius: 50%;" alt="Riya Bansal"/>
-
-### Riya Bansal
-
-**Frontend Developer · React · Firebase · UI/UX**
-
-*Passionate about building clean, user-friendly web applications that solve real-world problems.*
-
-<br/>
-
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Riya_Bansal-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/riyabansal)
-[![GitHub](https://img.shields.io/badge/GitHub-@riyabansal-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/riyabansal)
-[![Portfolio](https://img.shields.io/badge/Portfolio-Visit_Site-FF5722?style=for-the-badge&logo=firefox-browser&logoColor=white)](https://your-portfolio.com)
-[![Email](https://img.shields.io/badge/Email-Say_Hello-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:riya@example.com)
-
-<br/>
-
-</div>
-
----
-
-## 📄 License
-
-This project is developed for **learning, internship, and portfolio purposes**.
-
-```
-MIT License — feel free to use, fork, and modify with attribution.
-```
-
-See the [LICENSE](./LICENSE) file for full details.
-
----
 
 ## 🙏 Acknowledgements
 
