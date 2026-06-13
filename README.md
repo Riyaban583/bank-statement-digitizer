@@ -1,65 +1,81 @@
 <div align="center">
 
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=200&section=header&text=Bank%20Statement%20Digitizer&fontSize=42&fontColor=fff&animation=twinkling&fontAlignY=38&desc=Upload%20·%20Parse%20·%20Analyze%20·%20Export&descAlignY=60&descSize=18" width="100%"/>
+
 <br/>
-
-```
-██████╗  █████╗ ███╗   ██╗██╗  ██╗    ███████╗████████╗ █████╗ ████████╗███████╗
-██╔══██╗██╔══██╗████╗  ██║██║ ██╔╝    ██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██╔════╝
-██████╔╝███████║██╔██╗ ██║█████╔╝     ███████╗   ██║   ███████║   ██║   █████╗  
-██╔══██╗██╔══██║██║╚██╗██║██╔═██╗     ╚════██║   ██║   ██╔══██║   ██║   ██╔══╝  
-██████╔╝██║  ██║██║ ╚████║██║  ██╗    ███████║   ██║   ██║  ██║   ██║   ███████╗
-╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═══╝╚═╝  ╚═╝   ╚══════╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚══════╝
-
-██████╗ ██╗ ██████╗ ██╗████████╗██╗███████╗███████╗██████╗ 
-██╔══██╗██║██╔════╝ ██║╚══██╔══╝██║╚══███╔╝██╔════╝██╔══██╗
-██║  ██║██║██║  ███╗██║   ██║   ██║  ███╔╝ █████╗  ██████╔╝
-██║  ██║██║██║   ██║██║   ██║   ██║ ███╔╝  ██╔══╝  ██╔══██╗
-██████╔╝██║╚██████╔╝██║   ██║   ██║███████╗███████╗██║  ██║
-╚═════╝ ╚═╝ ╚═════╝ ╚═╝   ╚═╝   ╚═╝╚══════╝╚══════╝╚═╝  ╚═╝
-```
-
-**Upload · Parse · Analyze · Export**
 
 [![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react&logoColor=white)](https://reactjs.org/)
 [![Firebase](https://img.shields.io/badge/Firebase-Firestore-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)](https://firebase.google.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.x-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 [![Vite](https://img.shields.io/badge/Vite-5.x-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
-[![License](https://img.shields.io/badge/License-Portfolio-green?style=for-the-badge)](./LICENSE)
+[![PDF.js](https://img.shields.io/badge/PDF.js-Powered-FF6B35?style=for-the-badge&logo=adobe-acrobat-reader&logoColor=white)](https://mozilla.github.io/pdf.js/)
+[![License](https://img.shields.io/badge/License-Portfolio-22C55E?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](./LICENSE)
 
 <br/>
 
-> A full-stack React + Firebase web application that transforms your bank statement PDFs into structured, searchable, and exportable transaction data — all through a clean, responsive dashboard.
+[![Stars](https://img.shields.io/github/stars/riyabansal/bank-statement-digitizer?style=social)](https://github.com/)
+[![Forks](https://img.shields.io/github/forks/riyabansal/bank-statement-digitizer?style=social)](https://github.com/)
+[![Issues](https://img.shields.io/github/issues/riyabansal/bank-statement-digitizer?color=red)](https://github.com/)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat)](https://github.com/)
 
 <br/>
+
+<p align="center">
+  <strong>🏦 A full-stack React + Firebase web application that transforms bank statement PDFs<br/>into structured, searchable, and exportable transaction data — all through a clean dashboard.</strong>
+</p>
+
+<br/>
+
+[🚀 Live Demo](#) · [📖 Documentation](#-installation--setup) · [🐛 Report Bug](https://github.com/) · [💡 Request Feature](https://github.com/)
+
+<br/>
+
+</div>
 
 ---
 
-</div>
+## 📋 Table of Contents
+
+- [📸 Screenshots](#-screenshots)
+- [✨ Features](#-features)
+- [🛠️ Tech Stack](#️-tech-stack)
+- [📂 Project Structure](#-project-structure)
+- [⚙️ Installation & Setup](#️-installation--setup)
+- [🔥 Firebase Setup](#-firebase-setup)
+- [📊 Firestore Data Schema](#-firestore-data-schema)
+- [🔒 Security](#-security)
+- [🧪 How It Works](#-how-it-works)
+- [🗺️ Roadmap](#️-roadmap)
+- [🤝 Contributing](#-contributing)
+- [👩‍💻 Author](#-author)
+- [📄 License](#-license)
+
+---
 
 ## 📸 Screenshots
 
 <br/>
 
-### 🔐 Authentication
+### 🔐 Authentication Screens
 
 <div align="center">
 
-| Login Page | Signup Page |
+| 🔑 Login | 📝 Signup |
 |:---:|:---:|
-| ![Login](https://via.placeholder.com/500x320/1e293b/60a5fa?text=Login+Screen) | ![Signup](https://via.placeholder.com/500x320/1e293b/60a5fa?text=Signup+Screen) |
-| Secure email/password login via Firebase Auth | Create your account in seconds |
+| ![Login](https://via.placeholder.com/520x340/0f172a/60a5fa?text=🔐+Login+Screen) | ![Signup](https://via.placeholder.com/520x340/0f172a/60a5fa?text=📝+Signup+Screen) |
+| Secure Firebase email/password login | Create your account in seconds |
 
 </div>
 
 <br/>
 
-### 📤 PDF Upload
+### 📤 PDF Upload Interface
 
 <div align="center">
 
-![Upload](https://via.placeholder.com/900x400/0f172a/38bdf8?text=PDF+Upload+with+Drag+%26+Drop+%7C+Progress+Indicator+%7C+Password+Support)
+![Upload](https://via.placeholder.com/960x420/0f172a/38bdf8?text=📤+Drag+%26+Drop+PDF+Upload+·+Password+Support+·+Progress+Indicator)
 
-*Drag & drop or click to upload your bank statement PDF. Supports password-protected files and real-time upload progress.*
+*Intuitive drag & drop upload with real-time progress, password-protected PDF support, and instant validation feedback.*
 
 </div>
 
@@ -69,9 +85,9 @@
 
 <div align="center">
 
-![Dashboard](https://via.placeholder.com/900x500/0f172a/34d399?text=Transaction+Dashboard+%7C+Summary+Cards+%7C+Search+%7C+Paginated+Table)
+![Dashboard](https://via.placeholder.com/960x520/0f172a/34d399?text=📊+Dashboard+·+Summary+Cards+·+Live+Search+·+Paginated+Transactions+Table)
 
-*Full-featured transactions dashboard with summary cards, live search, running balance, and pagination controls.*
+*Complete dashboard with 4 summary cards, live description search, running balance column, and statement-wise filtering.*
 
 </div>
 
@@ -81,13 +97,15 @@
 
 <div align="center">
 
-![Statements](https://via.placeholder.com/900x400/0f172a/f472b6?text=Statement+List+%7C+Filter+by+Statement+%7C+Transaction+Count)
+![Statements](https://via.placeholder.com/960x420/0f172a/f472b6?text=🗂️+Statements+Manager+·+Filter+by+Statement+·+Transaction+Count+·+Date)
 
-*View all uploaded statements and drill into individual statement transactions using the statement selector dropdown.*
+*View all uploaded bank statements with metadata, filter transactions per statement, and track upload history.*
 
 </div>
 
 <br/>
+
+> 💡 **Tip:** Replace placeholder images with actual screenshots. Store them in `/docs/screenshots/` and reference with relative paths like `./docs/screenshots/dashboard.png`
 
 ---
 
@@ -95,75 +113,96 @@
 
 <br/>
 
-### 🔐 Authentication
-- User **Signup** & **Login** via Firebase Authentication
-- **Protected routes** — unauthenticated users are redirected
-- Persistent session with **Logout** functionality
-
+<details>
+<summary><b>🔐 Authentication & Security</b></summary>
 <br/>
 
-### 📤 PDF Statement Upload
+- ✅ User **Signup** with email & password via Firebase Auth
+- ✅ User **Login** with error handling (wrong credentials, unregistered email)
+- ✅ **Protected Routes** — unauthenticated users are auto-redirected to login
+- ✅ Persistent session management (auto login on page refresh)
+- ✅ **Logout** functionality with session cleanup
+- ✅ Per-user data isolation in Firestore
+
+</details>
+
+<details>
+<summary><b>📤 PDF Statement Upload</b></summary>
+<br/>
 
 | Feature | Details |
 |---|---|
-| **Drag & Drop** | Intuitive file drop zone for quick uploads |
-| **Password Support** | Handles password-protected PDFs using CryptoJS |
-| **File Validation** | PDF-only, max **20 MB** |
-| **Progress Indicator** | Real-time upload progress feedback |
-| **Error Handling** | Detects unsupported banks, invalid PDFs & wrong passwords |
+| 🖱️ **Drag & Drop** | Intuitive drop zone — drag files directly from your file manager |
+| 🔒 **Password Support** | Handles password-protected PDFs using CryptoJS decryption |
+| ✅ **File Validation** | PDF-only uploads, enforced max size of **20 MB** |
+| 📶 **Progress Indicator** | Real-time upload & parsing progress feedback |
+| ⚠️ **Smart Error Handling** | Detects unsupported banks, invalid PDFs, and wrong passwords |
+| 🏦 **Bank Detection** | Automatically identifies the bank from the PDF content |
 
+</details>
+
+<details>
+<summary><b>🔍 Transaction Parsing</b></summary>
 <br/>
 
-### 🔍 Transaction Parsing
+Powered by **PDF.js**, transactions are extracted automatically with these fields:
 
-Transactions are automatically extracted from PDFs with the following fields:
+| Field | Type | Example |
+|---|---|---|
+| `date` | String | `01/05/2026` |
+| `description` | String | `UPI Payment to Zomato` |
+| `debit` | Number | `499.00` |
+| `credit` | Number | `0` |
+| `balance` | Number | `24501.00` |
 
-```
-Date  ·  Description  ·  Debit  ·  Credit  ·  Balance
-```
+- Smart regex patterns to parse various bank statement formats
+- Handles multi-line transaction descriptions
+- Filters out non-transaction lines (headers, footers, summaries)
 
+</details>
+
+<details>
+<summary><b>📊 Transactions Dashboard</b></summary>
 <br/>
 
-### 🔥 Firebase Integration
+- 🔍 **Live Search** — filter transactions by description in real time
+- 💰 **Running Balance** column displayed alongside each transaction
+- 📋 **4 Summary Cards**:
+  - Total Transactions count
+  - Total Debit amount
+  - Total Credit amount
+  - Current Balance
+- 🗂️ **Statement Selector** dropdown to filter by individual statement
 
-```
-statements    →  Bank name · userId · transactionCount · uploadedAt
-transactions  →  date · description · debit · credit · balance · statementId · userId
-```
+</details>
 
-- Batch uploads for performance
-- User-scoped queries (no cross-user data access)
-- Statement metadata stored separately from transactions
-
+<details>
+<summary><b>📄 Pagination</b></summary>
 <br/>
 
-### 📊 Transactions Dashboard
-
-- **Search** transactions by description (live filter)
-- **Running balance** display column
-- **4 Summary Cards**: Total Transactions · Total Debit · Total Credit · Current Balance
-- **Statement selector** dropdown for filtering by individual uploads
-
-<br/>
-
-### 📄 Pagination
-
-| Option | Records per page |
-|---|:---:|
+| Size | Records per page |
+|:---:|:---:|
 | Small | 10 |
 | Medium | 25 |
 | Large | 50 |
 | XL | 100 |
 
-Previous / Next navigation with dynamic page count display.
+- ◀ Previous / Next ▶ navigation
+- Dynamic total page count display
+- Page size selector persists during session
 
+</details>
+
+<details>
+<summary><b>📥 Export & Management</b></summary>
 <br/>
 
-### 📥 Export
+- 📊 **Excel Export** — one-click `.xlsx` export of all or filtered transactions via SheetJS
+- 🗂️ **Statement Management** — view all uploaded statements with metadata
+- 🔢 **Transaction Count** per statement displayed in the statements list
+- 📅 **Upload timestamp** stored and displayed per statement
 
-Export all or filtered transactions to a **`.xlsx`** Excel file with a single click — powered by the SheetJS library.
-
-<br/>
+</details>
 
 ---
 
@@ -171,17 +210,22 @@ Export all or filtered transactions to a **`.xlsx`** Excel file with a single cl
 
 <br/>
 
-```
-Frontend          React.js · React Router DOM · Tailwind CSS
-Auth & Database   Firebase Authentication · Firebase Firestore
-PDF Parsing       PDF.js
-Excel Export      XLSX (SheetJS)
-Security          CryptoJS (PDF password decryption)
-Notifications     React Toastify
-Build Tool        Vite
-```
+<div align="center">
 
-<br/>
+| Layer | Technology | Purpose |
+|:---:|:---:|---|
+| ⚛️ | **React 18** | UI components & state management |
+| 🔀 | **React Router DOM** | Client-side routing & protected routes |
+| 🎨 | **Tailwind CSS** | Utility-first responsive styling |
+| 🔥 | **Firebase Auth** | Email/password authentication |
+| 🗄️ | **Cloud Firestore** | NoSQL database for statements & transactions |
+| 📄 | **PDF.js** | In-browser PDF text extraction |
+| 📊 | **SheetJS (XLSX)** | Excel file generation & export |
+| 🔐 | **CryptoJS** | Password-protected PDF decryption |
+| 🔔 | **React Toastify** | Toast notifications for user feedback |
+| ⚡ | **Vite** | Lightning-fast build tool & dev server |
+
+</div>
 
 ---
 
@@ -190,37 +234,39 @@ Build Tool        Vite
 ```
 bank-statement-digitizer/
 │
-├── public/
-├── src/
-│   ├── components/
-│   │   ├── Navbar.jsx           # Top navigation bar with logout
-│   │   ├── ProtectedRoute.jsx   # Auth guard for private routes
-│   │   └── UploadForm.jsx       # PDF upload with drag & drop
-│   │
-│   ├── pages/
-│   │   ├── Login.jsx            # Firebase email/password login
-│   │   ├── Signup.jsx           # New account registration
-│   │   ├── Upload.jsx           # PDF upload page
-│   │   ├── Transactions.jsx     # Main dashboard with table & search
-│   │   └── Statements.jsx       # Statement list & filter page
-│   │
-│   ├── services/
-│   │   ├── firestoreService.js  # Firestore CRUD operations
-│   │   └── transactionParser.js # PDF.js extraction logic
-│   │
-│   ├── firebase/
-│   │   └── firebaseConfig.js    # Firebase SDK initialization
-│   │
-│   ├── App.jsx                  # Route definitions
-│   └── main.jsx                 # React entry point
+├── 📁 public/                        # Static assets
 │
-├── .env                         # Environment variables (not committed)
-├── index.html
-├── vite.config.js
-└── package.json
+├── 📁 src/
+│   │
+│   ├── 📁 components/                # Reusable UI components
+│   │   ├── 🧭 Navbar.jsx             # Top navigation bar with logout
+│   │   ├── 🛡️ ProtectedRoute.jsx     # Auth guard — redirects unauthenticated users
+│   │   └── 📤 UploadForm.jsx         # PDF upload with drag & drop + validation
+│   │
+│   ├── 📁 pages/                     # Full page components (route targets)
+│   │   ├── 🔑 Login.jsx              # Firebase email/password login page
+│   │   ├── 📝 Signup.jsx             # New account registration page
+│   │   ├── 📤 Upload.jsx             # PDF upload page
+│   │   ├── 📊 Transactions.jsx       # Main dashboard — table, search, summary cards
+│   │   └── 🗂️ Statements.jsx         # Statement list & per-statement filter
+│   │
+│   ├── 📁 services/                  # Business logic & external integrations
+│   │   ├── 🔥 firestoreService.js    # Firestore CRUD — save, fetch, batch upload
+│   │   └── 📄 transactionParser.js   # PDF.js text extraction & transaction parsing
+│   │
+│   ├── 📁 firebase/
+│   │   └── ⚙️ firebaseConfig.js      # Firebase SDK initialization from env vars
+│   │
+│   ├── 🗺️ App.jsx                    # Route definitions & app layout
+│   └── 🚀 main.jsx                   # React DOM entry point
+│
+├── 🔒 .env                           # Environment variables (never commit this!)
+├── 🔒 .env.example                   # Template for environment variables
+├── 🚫 .gitignore                     # Git ignore rules
+├── 📄 index.html                     # HTML shell
+├── ⚡ vite.config.js                 # Vite build configuration
+└── 📦 package.json                   # Dependencies & scripts
 ```
-
-<br/>
 
 ---
 
@@ -228,16 +274,28 @@ bank-statement-digitizer/
 
 <br/>
 
-### 1. Clone the Repository
+### Prerequisites
+
+Make sure you have the following installed:
+
+```
+Node.js   ≥ 18.x    →  https://nodejs.org
+npm       ≥ 9.x     →  comes with Node.js
+Git                 →  https://git-scm.com
+```
+
+<br/>
+
+### Step 1 — Clone the Repository
 
 ```bash
-git clone <your-repository-url>
+git clone https://github.com/your-username/bank-statement-digitizer.git
 cd bank-statement-digitizer
 ```
 
 <br/>
 
-### 2. Install Dependencies
+### Step 2 — Install Dependencies
 
 ```bash
 npm install
@@ -245,32 +303,49 @@ npm install
 
 <br/>
 
-### 3. Configure Environment Variables
+### Step 3 — Configure Environment Variables
 
-Create a `.env` file in the project root:
+Copy the example env file and fill in your Firebase credentials:
 
-```env
-VITE_FIREBASE_API_KEY=your_api_key
-VITE_FIREBASE_AUTH_DOMAIN=your_auth_domain
-VITE_FIREBASE_PROJECT_ID=your_project_id
-VITE_FIREBASE_STORAGE_BUCKET=your_storage_bucket
-VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
-VITE_FIREBASE_APP_ID=your_app_id
+```bash
+cp .env.example .env
 ```
 
-> ⚠️ **Never commit your `.env` file.** Add it to `.gitignore`.
+Edit `.env` with your Firebase project values:
+
+```env
+# Firebase Configuration
+VITE_FIREBASE_API_KEY=AIzaSy...
+VITE_FIREBASE_AUTH_DOMAIN=your-project.firebaseapp.com
+VITE_FIREBASE_PROJECT_ID=your-project-id
+VITE_FIREBASE_STORAGE_BUCKET=your-project.appspot.com
+VITE_FIREBASE_MESSAGING_SENDER_ID=123456789012
+VITE_FIREBASE_APP_ID=1:123456789012:web:abc123def456
+```
+
+> ⚠️ **Security:** Never commit `.env` to version control. It's already listed in `.gitignore`.  
+> ✅ **Safe to commit:** `.env.example` with placeholder values only.
 
 <br/>
 
-### 4. Run the Development Server
+### Step 4 — Start Development Server
 
 ```bash
 npm run dev
 ```
 
-App will be available at → **http://localhost:5173**
+Open your browser at → **[http://localhost:5173](http://localhost:5173)**
 
 <br/>
+
+### Available Scripts
+
+| Script | Command | Description |
+|---|---|---|
+| Dev server | `npm run dev` | Start local development server with HMR |
+| Build | `npm run build` | Create optimised production bundle |
+| Preview | `npm run preview` | Preview production build locally |
+| Lint | `npm run lint` | Run ESLint across the codebase |
 
 ---
 
@@ -278,48 +353,76 @@ App will be available at → **http://localhost:5173**
 
 <br/>
 
-### Authentication
+### 1. Create a Firebase Project
 
-In the Firebase Console → **Authentication** → **Sign-in method**, enable:
+1. Go to [Firebase Console](https://console.firebase.google.com/)
+2. Click **Add project** → enter project name → Continue
+3. Disable Google Analytics (optional) → **Create project**
+
+<br/>
+
+### 2. Enable Authentication
 
 ```
-✅ Email/Password
+Firebase Console → Authentication → Sign-in method → Email/Password → Enable → Save
 ```
 
 <br/>
 
-### Firestore Database
-
-Create the following collections:
+### 3. Create Firestore Database
 
 ```
-📁 statements
-📁 transactions
+Firebase Console → Firestore Database → Create database → Start in test mode → Next → Enable
+```
+
+Create these two collections:
+
+```
+📁 statements       ← stores PDF upload metadata
+📁 transactions     ← stores parsed transaction rows
 ```
 
 <br/>
 
-### Firestore Security Rules (Recommended)
+### 4. Register Your Web App
+
+```
+Firebase Console → Project Settings → Your apps → Add app (</>) → Register app → Copy config
+```
+
+Paste the config values into your `.env` file.
+
+<br/>
+
+### 5. Firestore Security Rules
+
+Once development is complete, replace test mode rules with these production-ready rules:
 
 ```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // Users can only read/write their own statements
     match /statements/{docId} {
-      allow read, write: if request.auth != null
-        && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
     }
 
+    // Users can only read/write their own transactions
     match /transactions/{docId} {
-      allow read, write: if request.auth != null
-        && request.auth.uid == resource.data.userId;
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+      allow read, update, delete: if request.auth != null
+        && resource.data.userId == request.auth.uid;
     }
   }
 }
 ```
 
-<br/>
+> ✅ These rules ensure each user can only access their own data — even if someone knows another user's document IDs.
 
 ---
 
@@ -329,18 +432,23 @@ service cloud.firestore {
 
 ### `statements` collection
 
+Each document represents one uploaded PDF statement:
+
 ```json
 {
   "bank": "sbi",
-  "userId": "firebase_user_uid",
+  "userId": "firebase_user_uid_here",
   "transactionCount": 120,
-  "uploadedAt": "2026-05-01T10:30:00Z"
+  "uploadedAt": "2026-05-01T10:30:00.000Z",
+  "fileName": "SBI_Statement_May2026.pdf"
 }
 ```
 
 <br/>
 
 ### `transactions` collection
+
+Each document represents one transaction row parsed from a statement:
 
 ```json
 {
@@ -349,43 +457,146 @@ service cloud.firestore {
   "debit": 499.00,
   "credit": 0,
   "balance": 24501.00,
-  "statementId": "statement_firestore_doc_id",
-  "userId": "firebase_user_uid"
+  "statementId": "firestore_statement_doc_id",
+  "userId": "firebase_user_uid_here"
 }
 ```
 
 <br/>
 
+### Data Relationships
+
+```
+User (Firebase Auth)
+  └── statements (Firestore collection)
+        └── statement_doc_id
+              └── transactions (Firestore collection)
+                    ├── transaction_1  { statementId: "statement_doc_id" }
+                    ├── transaction_2  { statementId: "statement_doc_id" }
+                    └── transaction_n  ...
+```
+
 ---
 
 ## 🔒 Security
 
-| Layer | Implementation |
-|---|---|
-| **API Keys** | Stored in `.env`, never exposed in source |
-| **Authentication** | Firebase Auth — all routes protected |
-| **Data Access** | Firestore queries scoped to `userId` |
-| **Route Protection** | `ProtectedRoute` component with redirect |
+<br/>
+
+| Security Layer | Implementation | Status |
+|---|---|:---:|
+| 🔑 **API Keys** | Stored in `.env`, excluded from version control | ✅ |
+| 🛡️ **Authentication** | Firebase Auth — JWT tokens, session management | ✅ |
+| 🔐 **Data Isolation** | Firestore queries scoped to authenticated `userId` | ✅ |
+| 🚧 **Route Protection** | `ProtectedRoute` component with automatic redirect | ✅ |
+| 📜 **Firestore Rules** | Server-side rules enforce per-user data access | ✅ |
+| 🔒 **PDF Passwords** | CryptoJS handles decryption client-side only | ✅ |
+
+---
+
+## 🧪 How It Works
 
 <br/>
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                     USER JOURNEY FLOW                           │
+│                                                                 │
+│  1. SIGN UP / LOG IN                                            │
+│     └─▶ Firebase Auth validates credentials                     │
+│         └─▶ JWT token stored in browser session                 │
+│                                                                 │
+│  2. UPLOAD PDF                                                  │
+│     └─▶ File validated (type, size, password)                   │
+│         └─▶ PDF.js reads PDF binary in-browser                  │
+│             └─▶ Text extracted page by page                     │
+│                 └─▶ Regex patterns identify transaction rows    │
+│                     └─▶ Parsed rows structured as JSON          │
+│                                                                 │
+│  3. SAVE TO FIRESTORE                                           │
+│     └─▶ Statement metadata saved to /statements                 │
+│         └─▶ Transactions batch-saved to /transactions           │
+│             └─▶ Each doc tagged with userId + statementId       │
+│                                                                 │
+│  4. VIEW DASHBOARD                                              │
+│     └─▶ Transactions fetched for current user                   │
+│         └─▶ Summary cards computed client-side                  │
+│             └─▶ Live search filters description field           │
+│                 └─▶ Paginated table renders results             │
+│                                                                 │
+│  5. EXPORT                                                      │
+│     └─▶ SheetJS converts transaction array to .xlsx             │
+│         └─▶ Browser triggers file download                      │
+└─────────────────────────────────────────────────────────────────┘
+```
 
 ---
 
 ## 🗺️ Roadmap
 
-```
-✅  Core features (Upload · Parse · Store · Dashboard · Export)
+<br/>
 
-🔜  Multi-bank support (HDFC, ICICI, Axis, Kotak, etc.)
-🔜  Advanced analytics (Monthly trends, category breakdown)
-🔜  Transaction categorization (Food · Travel · Shopping · EMI)
-🔜  Pie charts & bar graphs (Recharts / Chart.js)
-🔜  PDF Export of filtered transactions
-🔜  Statement deletion
-🔜  Dark mode toggle
+### ✅ Completed
+
+- [x] Firebase Authentication (Login, Signup, Logout, Protected Routes)
+- [x] PDF upload with drag & drop, password support, and validation
+- [x] Transaction parsing with PDF.js
+- [x] Firestore integration (batch save, user-scoped queries)
+- [x] Transactions dashboard with search, summary cards, and running balance
+- [x] Statement management with filtering
+- [x] Pagination with configurable page size
+- [x] Excel export (.xlsx) via SheetJS
+
+<br/>
+
+### 🔜 Planned
+
+- [ ] **Multi-bank support** — HDFC, ICICI, Axis, Kotak, PNB, Canara
+- [ ] **Transaction categorization** — Auto-tag as Food, Travel, Shopping, EMI, etc.
+- [ ] **Analytics dashboard** — Monthly income vs expense bar charts
+- [ ] **Pie charts** — Spending breakdown by category using Recharts
+- [ ] **PDF Export** — Download filtered transactions as PDF
+- [ ] **Statement deletion** — Remove uploaded statements and their transactions
+- [ ] **Dark mode toggle** — System-aware + manual dark/light switch
+- [ ] **Mobile app** — React Native companion app
+- [ ] **AI insights** — GPT-powered spending analysis and recommendations
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Here's how to get started:
+
+```bash
+# 1. Fork the repository on GitHub
+
+# 2. Clone your fork
+git clone https://github.com/your-username/bank-statement-digitizer.git
+
+# 3. Create a feature branch
+git checkout -b feature/your-feature-name
+
+# 4. Make your changes and commit
+git add .
+git commit -m "feat: add your feature description"
+
+# 5. Push to your fork
+git push origin feature/your-feature-name
+
+# 6. Open a Pull Request on GitHub
 ```
 
 <br/>
+
+**Commit message convention:**
+
+| Prefix | Use for |
+|---|---|
+| `feat:` | New features |
+| `fix:` | Bug fixes |
+| `docs:` | Documentation updates |
+| `style:` | CSS / formatting changes |
+| `refactor:` | Code restructuring |
+| `chore:` | Dependencies, config updates |
 
 ---
 
@@ -393,34 +604,69 @@ service cloud.firestore {
 
 <div align="center">
 
+<br/>
+
+<img src="https://via.placeholder.com/120x120/0f172a/60a5fa?text=RB" width="90" style="border-radius: 50%;" alt="Riya Bansal"/>
+
 ### Riya Bansal
 
-**Frontend Developer · React Developer · Firebase Enthusiast**
+**Frontend Developer · React · Firebase · UI/UX**
 
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0077B5?style=for-the-badge&logo=linkedin)](https://linkedin.com/)
-[![GitHub](https://img.shields.io/badge/GitHub-Follow-181717?style=for-the-badge&logo=github)](https://github.com/)
-[![Portfolio](https://img.shields.io/badge/Portfolio-Visit-FF5722?style=for-the-badge&logo=firefox)](https://your-portfolio.com/)
-
-</div>
+*Passionate about building clean, user-friendly web applications that solve real-world problems.*
 
 <br/>
+
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Riya_Bansal-0077B5?style=for-the-badge&logo=linkedin&logoColor=white)](https://linkedin.com/in/riyabansal)
+[![GitHub](https://img.shields.io/badge/GitHub-@riyabansal-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/riyabansal)
+[![Portfolio](https://img.shields.io/badge/Portfolio-Visit_Site-FF5722?style=for-the-badge&logo=firefox-browser&logoColor=white)](https://your-portfolio.com)
+[![Email](https://img.shields.io/badge/Email-Say_Hello-EA4335?style=for-the-badge&logo=gmail&logoColor=white)](mailto:riya@example.com)
+
+<br/>
+
+</div>
 
 ---
 
 ## 📄 License
 
-This project is developed for **learning, internship tasks, and portfolio purposes**.
+This project is developed for **learning, internship, and portfolio purposes**.
 
-Feel free to explore, fork, and build upon it — a credit or star ⭐ is always appreciated!
+```
+MIT License — feel free to use, fork, and modify with attribution.
+```
 
-<br/>
-
-<div align="center">
+See the [LICENSE](./LICENSE) file for full details.
 
 ---
 
-Made with ❤️ by **Riya Bansal**
+## 🙏 Acknowledgements
 
-*If this project helped you, consider giving it a ⭐ on GitHub!*
+| Tool / Resource | How it helped |
+|---|---|
+| [Firebase](https://firebase.google.com/) | Authentication and real-time database |
+| [PDF.js](https://mozilla.github.io/pdf.js/) | Client-side PDF text extraction |
+| [SheetJS](https://sheetjs.com/) | Excel file generation |
+| [Tailwind CSS](https://tailwindcss.com/) | Rapid, responsive UI styling |
+| [React Toastify](https://fkhadra.github.io/react-toastify/) | Clean toast notification system |
+| [Shields.io](https://shields.io/) | README badges |
+| [Capsule Render](https://github.com/kyechan99/capsule-render) | Animated header banner |
+
+---
+
+<div align="center">
+
+<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=6,11,20&height=100&section=footer" width="100%"/>
+
+<br/>
+
+**⭐ If this project helped you or impressed you, please give it a star! It means the world. ⭐**
+
+<br/>
+
+Made with ❤️ and ☕ by **[Riya Bansal](https://github.com/riyabansal)**
+
+<br/>
+
+![Visitor Count](https://visitor-badge.laobi.icu/badge?page_id=riyabansal.bank-statement-digitizer)
 
 </div>
