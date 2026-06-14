@@ -18,16 +18,101 @@ export default function Transactions() {
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [fromDate, setFromDate] = useState("");
+const [toDate, setToDate] = useState("");
+const [minAmount, setMinAmount] = useState("");
+const [maxAmount, setMaxAmount] = useState("");
+const [transactionType, setTransactionType] =
+  useState("all");
   const [pageSize, setPageSize] = useState(10);
   const [statements, setStatements] = useState([]);
 const [selectedStatement, setSelectedStatement] = useState("");
-  const [searchParams] =
-  useSearchParams();
-
+const [
+  searchParams,
+  setSearchParams
+] = useSearchParams();
 const statementId =
   searchParams.get(
     "statementId"
   );
+  useEffect(() => {
+
+  const search =
+    searchParams.get(
+      "search"
+    ) || "";
+
+  const from =
+    searchParams.get(
+      "fromDate"
+    ) || "";
+
+  const to =
+    searchParams.get(
+      "toDate"
+    ) || "";
+
+  const min =
+    searchParams.get(
+      "minAmount"
+    ) || "";
+
+  const max =
+    searchParams.get(
+      "maxAmount"
+    ) || "";
+
+  const type =
+    searchParams.get(
+      "type"
+    ) || "all";
+
+  setSearchTerm(search);
+  setFromDate(from);
+  setToDate(to);
+  setMinAmount(min);
+  setMaxAmount(max);
+  setTransactionType(type);
+
+}, []);
+useEffect(() => {
+
+  const params = {};
+
+  if (searchTerm)
+    params.search = searchTerm;
+
+  if (fromDate)
+    params.fromDate = fromDate;
+
+  if (toDate)
+    params.toDate = toDate;
+
+  if (minAmount)
+    params.minAmount =
+      minAmount;
+
+  if (maxAmount)
+    params.maxAmount =
+      maxAmount;
+
+  if (
+    transactionType !==
+    "all"
+  )
+    params.type =
+      transactionType;
+
+  setSearchParams(params);
+
+}, [
+  searchTerm,
+  fromDate,
+  toDate,
+  minAmount,
+  maxAmount,
+  transactionType
+]);
 
  useEffect(() => {
   fetchTransactions();
@@ -132,7 +217,7 @@ const statementId =
   }
 };
 
-  const filteredTransactions =
+ const filteredTransactions =
   transactions.filter((txn) => {
 
     const matchesSearch =
@@ -148,10 +233,56 @@ const statementId =
         : txn.statementId ===
           selectedStatement;
 
-    return (
-      matchesSearch &&
-      matchesStatement
-    );
+    // DD/MM/YYYY -> YYYY-MM-DD
+    const txnDate = txn.date
+  ? txn.date.split("/").reverse().join("-")
+  : "";
+
+    const matchesFromDate =
+      fromDate === ""
+        ? true
+        : txnDate >= fromDate;
+
+    const matchesToDate =
+      toDate === ""
+        ? true
+        : txnDate <= toDate;
+
+        const amount =
+  Number(
+    txn.debit ||
+    txn.credit ||
+    0
+  );
+
+const matchesMinAmount =
+  minAmount === ""
+    ? true
+    : amount >=
+      Number(minAmount);
+
+      const matchesMaxAmount =
+  maxAmount === ""
+    ? true
+    : amount <= Number(maxAmount);
+
+    const matchesType =
+  transactionType === "all"
+    ? true
+    : transactionType ===
+      "debit"
+    ? Number(txn.debit || 0) > 0
+    : Number(txn.credit || 0) > 0;
+
+   return (
+  matchesSearch &&
+  matchesStatement &&
+  matchesFromDate &&
+  matchesToDate &&
+  matchesMinAmount &&
+  matchesMaxAmount &&
+  matchesType
+);
   });
 
   const totalPages = Math.ceil(
@@ -274,12 +405,115 @@ const paginatedTransactions =
             type="text"
             placeholder="Search by description..."
             value={searchTerm}
-            onChange={(e) =>
-              setSearchTerm(e.target.value)
-            }
+           onChange={(e) => {
+  setSearchTerm(e.target.value);
+  setCurrentPage(1);
+}} 
             className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
         </div>
+        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
+
+  <h3 className="font-semibold mb-3">
+    Filter By Date
+  </h3>
+
+  <div className="grid md:grid-cols-2 gap-4">
+
+    <input
+      type="date"
+      value={fromDate}
+      onChange={(e) => {
+  setFromDate(e.target.value);
+  setCurrentPage(1);
+}}
+      className="border border-gray-300 rounded-lg px-4 py-2"
+    />
+
+    <input
+      type="date"
+      value={toDate}
+     onChange={(e) => {
+  setToDate(e.target.value);
+  setCurrentPage(1);
+}}
+      className="border border-gray-300 rounded-lg px-4 py-2"
+    />
+
+  </div>
+
+</div>
+
+<div className="bg-white rounded-xl shadow-md p-4 mb-6">
+
+  <h3 className="font-semibold mb-3">
+    Minimum Amount
+  </h3>
+
+  <input
+    type="number"
+    placeholder="Enter Minimum Amount"
+    value={minAmount}
+    onChange={(e) => {
+      setMinAmount(e.target.value);
+      setCurrentPage(1);
+    }}
+    className="w-full border border-gray-300 rounded-lg px-4 py-2"
+  />
+
+</div>
+
+<div className="bg-white rounded-xl shadow-md p-4 mb-6">
+
+  <h3 className="font-semibold mb-3">
+    Maximum Amount
+  </h3>
+
+  <input
+    type="number"
+    placeholder="Enter Maximum Amount"
+    value={maxAmount}
+    onChange={(e) => {
+      setMaxAmount(e.target.value);
+      setCurrentPage(1);
+    }}
+    className="w-full border border-gray-300 rounded-lg px-4 py-2"
+  />
+
+</div>
+
+<div className="bg-white rounded-xl shadow-md p-4 mb-6">
+
+  <h3 className="font-semibold mb-3">
+    Transaction Type
+  </h3>
+
+  <select
+    value={transactionType}
+    onChange={(e) => {
+      setTransactionType(
+        e.target.value
+      );
+      setCurrentPage(1);
+    }}
+    className="w-full border border-gray-300 rounded-lg px-4 py-2"
+  >
+    <option value="all">
+      All
+    </option>
+
+    <option value="debit">
+      Debit
+    </option>
+
+    <option value="credit">
+      Credit
+    </option>
+
+  </select>
+
+</div>
+
         <div className="bg-white rounded-xl shadow-md p-4 mb-6">
   <label className="block font-semibold mb-2">
     Select Statement
@@ -287,11 +521,12 @@ const paginatedTransactions =
 
   <select
     value={selectedStatement}
-    onChange={(e) =>
-      setSelectedStatement(
-        e.target.value
-      )
-    }
+   onChange={(e) => {
+  setSelectedStatement(
+    e.target.value
+  );
+  setCurrentPage(1);
+}}
     className="w-full border border-gray-300 rounded-lg px-4 py-2"
   >
     <option value="">
@@ -338,6 +573,73 @@ const paginatedTransactions =
   {filteredTransactions.length}
   {" "}transactions
 </div>
+
+<div className="flex flex-wrap gap-2 mb-4">
+
+ {searchTerm && (
+  <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full flex items-center gap-2">
+
+    Search: {searchTerm}
+
+    <button
+      onClick={() =>
+        setSearchTerm("")
+      }
+    >
+      ✕
+    </button>
+
+  </div>
+)}
+
+  {fromDate && (
+    <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full">
+      From: {fromDate}
+    </div>
+  )}
+
+  {toDate && (
+    <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full">
+      To: {toDate}
+    </div>
+  )}
+
+  {minAmount && (
+    <div className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full">
+      Min: ₹{minAmount}
+    </div>
+  )}
+
+  {maxAmount && (
+    <div className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full">
+      Max: ₹{maxAmount}
+    </div>
+  )}
+
+  {transactionType !== "all" && (
+    <div className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full">
+      Type: {transactionType}
+    </div>
+  )}
+
+</div>
+
+<button
+  onClick={() => {
+    setSearchTerm("");
+    setFromDate("");
+    setToDate("");
+    setMinAmount("");
+    setMaxAmount("");
+    setTransactionType("all");
+    setSelectedStatement("");
+    setCurrentPage(1);
+  }}
+  className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg shadow-md mr-3"
+>
+  Reset Filters
+</button>
+
   <button
     onClick={exportToExcel}
     className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow-md"
