@@ -17,6 +17,7 @@ export default function Transactions() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] =useState("All");
   const [currentPage, setCurrentPage] = useState(1);
   const [fromDate, setFromDate] = useState("");
 const [toDate, setToDate] = useState("");
@@ -274,14 +275,21 @@ const matchesMinAmount =
     ? Number(txn.debit || 0) > 0
     : Number(txn.credit || 0) > 0;
 
-   return (
+    const matchesCategory =
+  categoryFilter === "All"
+    ? true
+    : txn.category ===
+      categoryFilter;
+
+  return (
   matchesSearch &&
   matchesStatement &&
   matchesFromDate &&
   matchesToDate &&
   matchesMinAmount &&
   matchesMaxAmount &&
-  matchesType
+  matchesType &&
+  matchesCategory
 );
   });
 
@@ -512,6 +520,54 @@ const paginatedTransactions =
 
   </select>
 
+</div>
+
+<div className="bg-white rounded-xl shadow-md p-4 mb-6">
+  <label className="block font-medium mb-2">
+    Category
+  </label>
+
+  <select
+    value={categoryFilter}
+    onChange={(e) =>
+      setCategoryFilter(
+        e.target.value
+      )
+    }
+    className="w-full border border-gray-300 rounded-lg px-4 py-2"
+  >
+    <option value="All">
+      All Categories
+    </option>
+
+    <option value="Salary">
+      Salary
+    </option>
+
+    <option value="Food">
+      Food
+    </option>
+
+    <option value="Rent">
+      Rent
+    </option>
+
+    <option value="Utility">
+      Utility
+    </option>
+
+    <option value="ATM">
+      ATM
+    </option>
+
+    <option value="Transfer">
+      Transfer
+    </option>
+
+    <option value="Other">
+      Other
+    </option>
+  </select>
 </div>
 
         <div className="bg-white rounded-xl shadow-md p-4 mb-6">

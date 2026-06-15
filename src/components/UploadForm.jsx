@@ -135,6 +135,19 @@ const handleDragLeave = () => {
         const textContent =
           await page.getTextContent();
 
+          if (
+  textContent.items.length ===
+  0
+) {
+  toast.warning(
+    "This looks like a scanned PDF. OCR is not supported yet."
+  );
+
+  setLoading(false);
+  setProgress(0);
+  return;
+}
+
         const pageText =
           textContent.items
             .map(
@@ -149,6 +162,7 @@ const handleDragLeave = () => {
       setProgress(60);
 
       setPdfText(fullText);
+      console.log(fullText);
 
       const parsedTransactions =
         parseTransactions(

@@ -48,6 +48,54 @@ const generateTransactionId = (
   ).toString();
 };
 
+const getCategory = (
+  description
+) => {
+  const desc =
+    description.toLowerCase();
+
+  if (
+    desc.includes("salary")
+  )
+    return "Salary";
+
+  if (
+    desc.includes("swiggy") ||
+    desc.includes("zomato") ||
+    desc.includes("food")
+  )
+    return "Food";
+
+  if (
+    desc.includes("rent")
+  )
+    return "Rent";
+
+  if (
+    desc.includes(
+      "electricity"
+    ) ||
+    desc.includes("water") ||
+    desc.includes("gas")
+  )
+    return "Utility";
+
+  if (
+    desc.includes("atm")
+  )
+    return "ATM";
+
+  if (
+    desc.includes("upi") ||
+    desc.includes(
+      "transfer"
+    )
+  )
+    return "Transfer";
+
+  return "Other";
+};
+
 export const saveTransactionsBatch =
   async (
     transactions,
@@ -85,14 +133,20 @@ export const saveTransactionsBatch =
                 transactionId
               );
 
-            batch.set(
-              transactionRef,
-              {
-                ...transaction,
-                statementId,
-                 userId,
-              }
-            );
+           batch.set(
+  transactionRef,
+  {
+    ...transaction,
+
+    category:
+      getCategory(
+        transaction.description
+      ),
+
+    statementId,
+    userId,
+  }
+);
           }
         );
 
