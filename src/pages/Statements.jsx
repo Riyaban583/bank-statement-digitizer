@@ -18,11 +18,7 @@ export default function Statements() {
   const [statements, setStatements] =
     useState([]);
 
-  useEffect(() => {
-    fetchStatements();
-  }, []);
-
-  const fetchStatements = async () => {
+const fetchStatements = async () => {
     try {
       const q = query(
         collection(db, "statements"),
@@ -52,6 +48,10 @@ export default function Statements() {
       );
     }
   };
+
+  useEffect(() => {
+  fetchStatements();
+}, []);
 
   return (
     <>

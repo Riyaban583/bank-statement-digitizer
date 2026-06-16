@@ -22,9 +22,11 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 export default function UploadForm() {
   const [file, setFile] = useState(null);
   const [password, setPassword] = useState("");
-  const [pdfText, setPdfText] = useState("");
-  const [transactions, setTransactions] = useState([]);
+ const [, setPdfText] =
+  useState("");
 
+const [, setTransactions] =
+  useState([]);
   // Future Storage Upload Progress
   const [progress, setProgress] = useState(0);
 
