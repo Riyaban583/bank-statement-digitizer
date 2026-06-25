@@ -379,15 +379,15 @@ const fetchInvoices = async () => {
   <table className="w-full">
    <thead>
   <tr className="bg-red-600 text-white">
-   <th className="p-3">
+   <th className="p-3 text-left ">
   Date
 </th>
 
-<th className="p-3">
+<th className="p-3 text-left">
   Description
 </th>
 
-<th className="p-3">
+<th className="p-3 text-left">
   Amount
 </th>
   </tr>
