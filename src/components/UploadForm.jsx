@@ -171,6 +171,9 @@ const handleDragLeave = () => {
           fullText
         );
 
+        console.log("PARSED");
+console.log(parsedTransactions);
+
         if (
   !parsedTransactions ||
   parsedTransactions.length === 0
@@ -178,8 +181,8 @@ const handleDragLeave = () => {
   setProgress(0);
    setLoading(false);
   toast.error(
-    "UNSUPPORTED_BANK"
-  );
+  "No transactions found in this PDF."
+);
   return;
 }
 
@@ -200,9 +203,9 @@ const handleDragLeave = () => {
         parsedTransactions.length
       );
 
-      const statementId =
-        await createStatement({
-          bank: "sbi",
+     const statementId =
+  await createStatement({
+     bank: "UNKNOWN",
          userId: auth.currentUser.uid,
           transactionCount:
             parsedTransactions.length,

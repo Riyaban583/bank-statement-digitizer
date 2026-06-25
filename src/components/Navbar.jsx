@@ -43,6 +43,17 @@ export default function Navbar() {
   >
     Statements
   </Link>
+
+  <Link
+  to="/entries"
+  className="hover:text-blue-200"
+>
+  Entries
+</Link>
+
+<Link to="/invoices">
+  Invoices
+</Link>
 </div>
         <button
           onClick={handleLogout}

@@ -8,6 +8,8 @@ import Signup from "./pages/Signup";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import Statements from "./pages/Statements";
+import Entries from "./pages/Entries";
+import Invoices from "./pages/Invoices";
 
 console.log(app);
 
@@ -42,6 +44,18 @@ function App() {
   }
 />
 
+<Route
+  path="/entries"
+  element={
+    <ProtectedRoute>
+      <Entries />
+    </ProtectedRoute>
+  }
+/>
+<Route
+  path="/invoices"
+  element={<Invoices />}
+/>
         <Route
           path="/login"
           element={<Login />}
