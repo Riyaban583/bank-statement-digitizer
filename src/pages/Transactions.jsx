@@ -115,13 +115,26 @@ useEffect(() => {
   transactionType
 ]);
 
- useEffect(() => {
-  fetchTransactions();
-  fetchStatements();
+useEffect(() => {
+  const unsubscribe = auth.onAuthStateChanged((user) => {
+    if (user) {
+      fetchTransactions();
+      fetchStatements();
+    }
+  });
+
+  return () => unsubscribe();
 }, []);
 
   const fetchTransactions = async () => {
   try {
+    console.log("Current User:", auth.currentUser);
+console.log("UID:", auth.currentUser?.uid);
+
+if (!auth.currentUser) {
+  console.log("User not logged in yet");
+  return;
+}
 
     console.log(
       "statementId =",
@@ -189,6 +202,13 @@ useEffect(() => {
   
    const fetchStatements = async () => {
   try {
+    console.log("Current User:", auth.currentUser);
+console.log("UID:", auth.currentUser?.uid);
+
+if (!auth.currentUser) {
+  console.log("User not logged in yet");
+  return;
+}
     const q = query(
       collection(db, "statements"),
       where(
@@ -200,6 +220,7 @@ useEffect(() => {
 
     const snapshot =
       await getDocs(q);
+      console.log("Statements Found:", snapshot.docs.length);
 
     const data =
       snapshot.docs.map(
