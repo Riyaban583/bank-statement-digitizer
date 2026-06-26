@@ -39,10 +39,11 @@ export const createStatement = async ({
 };
 
 const generateTransactionId = (
-  transaction
+  transaction,
+  userId
 ) => {
-  const rawString = `${transaction.date}-${transaction.description}-${transaction.amount}`;
-
+  const rawString =
+`${userId}-${transaction.date}-${transaction.description}-${transaction.credit}-${transaction.debit}`;
   return CryptoJS.SHA256(
     rawString
   ).toString();
@@ -123,7 +124,8 @@ export const saveTransactionsBatch =
           (transaction) => {
             const transactionId =
               generateTransactionId(
-                transaction
+                transaction,
+                userId
               );
 
             const transactionRef =
