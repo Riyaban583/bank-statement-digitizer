@@ -210,9 +210,10 @@ console.log(
 );
     try {
   const statementId = await createStatement({
-    userId: auth.currentUser.uid,
-    transactionCount: parsedTransactions.length,
-  });
+  bank: "SBI",
+  userId: auth.currentUser.uid,
+  transactionCount: parsedTransactions.length,
+});
 
   console.log("Statement Created:", statementId);
 
