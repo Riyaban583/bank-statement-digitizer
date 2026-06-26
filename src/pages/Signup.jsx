@@ -1,90 +1,80 @@
 import { useState } from "react";
-import {
-  createUserWithEmailAndPassword,
-} from "firebase/auth";
-
+import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase/firebaseConfig";
 import { useNavigate } from "react-router-dom";
+import { Card, Button, Input, Field } from "../components/ui";
 
 export default function Signup() {
-  const [email, setEmail] =
-    useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const [password, setPassword] =
-    useState("");
-    const navigate = useNavigate();
-  const handleSignup = async (
-    e
-  ) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-
     try {
-      await createUserWithEmailAndPassword(
-  auth,
-  email,
-  password
-);
-
-navigate("/");
+      setLoading(true);
+      await createUserWithEmailAndPassword(auth, email, password);
+      navigate("/");
     } catch (error) {
-      console.error(error);
-
       alert(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex justify-center items-center bg-slate-100">
+    <div className="flex min-h-screen items-center justify-center bg-slate-50 px-4">
+      <Card className="w-full max-w-sm p-8">
+        <div className="mb-6 flex items-center gap-2">
+          <span className="grid h-9 w-9 place-items-center rounded-lg bg-slate-900 text-sm font-bold text-white">
+            B
+          </span>
+          <span className="text-lg font-semibold text-slate-900">
+            BankDigitizer
+          </span>
+        </div>
 
-      <form
-        onSubmit={handleSignup}
-        className="bg-white p-8 rounded-xl shadow-md w-96"
-      >
-        <h2 className="text-3xl font-bold mb-6">
-          Signup
-        </h2>
+        <h2 className="text-xl font-bold text-slate-900">Create account</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Start digitizing your statements
+        </p>
 
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) =>
-            setEmail(
-              e.target.value
-            )
-          }
-          className="w-full border p-3 rounded-lg mb-4"
-        />
+        <form onSubmit={handleSignup} className="mt-6 space-y-4">
+          <Field label="Email">
+            <Input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+          </Field>
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) =>
-            setPassword(
-              e.target.value
-            )
-          }
-          className="w-full border p-3 rounded-lg mb-4"
-        />
+          <Field label="Password">
+            <Input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+            />
+          </Field>
 
-        <button
-          type="submit"
-          className="w-full bg-green-600 text-white py-3 rounded-lg"
-        >
-          Signup
-        </button>
-        <p className="text-center mt-4 text-gray-600">
-  Already have an account?{" "}
-  <span
-    onClick={() => navigate("/login")}
-    className="text-blue-600 font-semibold cursor-pointer hover:underline"
-  >
-    Login
-  </span>
-</p>
-      </form>
+          <Button type="submit" size="lg" className="w-full" disabled={loading}>
+            {loading ? "Creating..." : "Sign Up"}
+          </Button>
+        </form>
 
+        <p className="mt-6 text-center text-sm text-slate-500">
+          Already have an account?{" "}
+          <button
+            type="button"
+            onClick={() => navigate("/login")}
+            className="font-semibold text-slate-900 hover:underline"
+          >
+            Login
+          </button>
+        </p>
+      </Card>
     </div>
   );
 }

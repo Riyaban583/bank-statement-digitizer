@@ -1,887 +1,527 @@
-import { useEffect, useState } from "react";
-import { db } from "../firebase/firebaseConfig";
+import { useEffect, useMemo, useState } from "react";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db, auth } from "../firebase/firebaseConfig";
+import { useSearchParams } from "react-router-dom";
+import * as XLSX from "xlsx";
+
 import Navbar from "../components/Navbar";
 import {
-  collection,
-  getDocs,
-  query,
-  where,
-} from "firebase/firestore";
+  Card,
+  Button,
+  Badge,
+  Input,
+  Select,
+  Field,
+  StatCard,
+  TabButton,
+} from "../components/ui";
+import TransactionsTable from "../components/transactions/TransactionsTable";
+import ReconciliationTab from "../components/transactions/ReconciliationTab";
+import { isTxnMatched } from "../utils/matching";
+import { formatCurrency, toISODate } from "../utils/format";
 
-import { auth } from "../firebase/firebaseConfig";
-import * as XLSX from "xlsx";
-import { useSearchParams } from "react-router-dom";
+const CATEGORIES = [
+  "All",
+  "Salary",
+  "Food",
+  "Rent",
+  "Utility",
+  "ATM",
+  "Transfer",
+  "Other",
+];
 
 export default function Transactions() {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Data
   const [transactions, setTransactions] = useState([]);
+  const [statements, setStatements] = useState([]);
+  const [invoices, setInvoices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [categoryFilter, setCategoryFilter] =useState("All");
+
+  // UI
+  const [tab, setTab] = useState("transactions");
+  const [showFilters, setShowFilters] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [fromDate, setFromDate] = useState("");
-const [toDate, setToDate] = useState("");
-const [minAmount, setMinAmount] = useState("");
-const [maxAmount, setMaxAmount] = useState("");
-const [transactionType, setTransactionType] =
-  useState("all");
   const [pageSize, setPageSize] = useState(10);
-  const [statements, setStatements] = useState([]);
-const [selectedStatement, setSelectedStatement] = useState("");
-const [
-  searchParams,
-  setSearchParams
-] = useSearchParams();
-const statementId =
-  searchParams.get(
-    "statementId"
+
+  // Filters (initialised from URL so deep links work)
+  const [searchTerm, setSearchTerm] = useState(
+    () => searchParams.get("search") || ""
   );
+  const [fromDate, setFromDate] = useState(
+    () => searchParams.get("fromDate") || ""
+  );
+  const [toDate, setToDate] = useState(() => searchParams.get("toDate") || "");
+  const [minAmount, setMinAmount] = useState(
+    () => searchParams.get("minAmount") || ""
+  );
+  const [maxAmount, setMaxAmount] = useState(
+    () => searchParams.get("maxAmount") || ""
+  );
+  const [transactionType, setTransactionType] = useState(
+    () => searchParams.get("type") || "all"
+  );
+  const [statusFilter, setStatusFilter] = useState(
+    () => searchParams.get("status") || "all"
+  );
+  const [categoryFilter, setCategoryFilter] = useState("All");
+  const [selectedStatement, setSelectedStatement] = useState(
+    () => searchParams.get("statementId") || ""
+  );
+
+  /* --------------------------------------------------------- Fetching */
   useEffect(() => {
+    const fetchCollection = async (name, uid) => {
+      const q = query(collection(db, name), where("userId", "==", uid));
+      const snapshot = await getDocs(q);
+      return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+    };
 
-  const search =
-    searchParams.get(
-      "search"
-    ) || "";
+    const load = async (uid) => {
+      try {
+        const [txns, stmts, invs] = await Promise.all([
+          fetchCollection("transactions", uid),
+          fetchCollection("statements", uid),
+          fetchCollection("invoices", uid),
+        ]);
+        setTransactions(txns);
+        setStatements(stmts);
+        setInvoices(invs);
+      } catch (err) {
+        console.error("Error loading data:", err);
+        setError("Failed to load transactions");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const from =
-    searchParams.get(
-      "fromDate"
-    ) || "";
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) load(user.uid);
+    });
+    return () => unsubscribe();
+  }, []);
 
-  const to =
-    searchParams.get(
-      "toDate"
-    ) || "";
+  /* ----------------------------------------------------- URL sync */
+  useEffect(() => {
+    const params = {};
+    if (searchTerm) params.search = searchTerm;
+    if (fromDate) params.fromDate = fromDate;
+    if (toDate) params.toDate = toDate;
+    if (minAmount) params.minAmount = minAmount;
+    if (maxAmount) params.maxAmount = maxAmount;
+    if (transactionType !== "all") params.type = transactionType;
+    if (statusFilter !== "all") params.status = statusFilter;
+    if (selectedStatement) params.statementId = selectedStatement;
+    setSearchParams(params, { replace: true });
+  }, [
+    searchTerm,
+    fromDate,
+    toDate,
+    minAmount,
+    maxAmount,
+    transactionType,
+    statusFilter,
+    selectedStatement,
+    setSearchParams,
+  ]);
 
-  const min =
-    searchParams.get(
-      "minAmount"
-    ) || "";
-
-  const max =
-    searchParams.get(
-      "maxAmount"
-    ) || "";
-
-  const type =
-    searchParams.get(
-      "type"
-    ) || "all";
-
-  setSearchTerm(search);
-  setFromDate(from);
-  setToDate(to);
-  setMinAmount(min);
-  setMaxAmount(max);
-  setTransactionType(type);
-
-}, []);
-useEffect(() => {
-
-  const params = {};
-
-  if (searchTerm)
-    params.search = searchTerm;
-
-  if (fromDate)
-    params.fromDate = fromDate;
-
-  if (toDate)
-    params.toDate = toDate;
-
-  if (minAmount)
-    params.minAmount =
-      minAmount;
-
-  if (maxAmount)
-    params.maxAmount =
-      maxAmount;
-
-  if (
-    transactionType !==
-    "all"
-  )
-    params.type =
-      transactionType;
-
-  setSearchParams(params);
-
-}, [
-  searchTerm,
-  fromDate,
-  toDate,
-  minAmount,
-  maxAmount,
-  transactionType
-]);
-
-useEffect(() => {
-  const unsubscribe = auth.onAuthStateChanged((user) => {
-    if (user) {
-      fetchTransactions();
-      fetchStatements();
-    }
-  });
-
-  return () => unsubscribe();
-}, []);
-
-  const fetchTransactions = async () => {
-  try {
-    console.log("Current User:", auth.currentUser);
-console.log("UID:", auth.currentUser?.uid);
-
-if (!auth.currentUser) {
-  console.log("User not logged in yet");
-  return;
-}
-
-    console.log(
-      "statementId =",
-      statementId
-    );
-
-    console.log(
-      "userId =",
-      auth.currentUser.uid
-    );
-
-    let q;
-
-    if (statementId) {
-      q = query(
-        collection(db, "transactions"),
-        where(
-          "userId",
-          "==",
-          auth.currentUser.uid
-        ),
-        where(
-          "statementId",
-          "==",
-          statementId
-        )
-      );
-    } else {
-      q = query(
-        collection(db, "transactions"),
-        where(
-          "userId",
-          "==",
-          auth.currentUser.uid
-        )
-      );
-    }
-
-    const querySnapshot =
-      await getDocs(q);
-
-    console.log(
-      "Docs Found:",
-      querySnapshot.docs.length
-    );
-
-      const data = querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      setTransactions(data);
-    } catch (error) {
-      console.error(
-        "Error fetching transactions:",
-        error
-      );
-       setError(
-    "Failed to load transactions"
-  );
-    } finally {
-      setLoading(false);
-    }
-  };
-  
-   const fetchStatements = async () => {
-  try {
-    console.log("Current User:", auth.currentUser);
-console.log("UID:", auth.currentUser?.uid);
-
-if (!auth.currentUser) {
-  console.log("User not logged in yet");
-  return;
-}
-    const q = query(
-      collection(db, "statements"),
-      where(
-        "userId",
-        "==",
-        auth.currentUser.uid
-      )
-    );
-
-    const snapshot =
-      await getDocs(q);
-      console.log("Statements Found:", snapshot.docs.length);
-
-    const data =
-      snapshot.docs.map(
-        (doc) => ({
-          id: doc.id,
-          ...doc.data(),
-        })
-      );
-
-    setStatements(data);
-  } catch (error) {
-    console.error(
-      "Error fetching statements:",
-      error
-    );
+  // Reset to the first page whenever a filter changes.
+  // (adjust-state-during-render pattern — avoids an extra effect/render)
+  const filterKey = [
+    searchTerm,
+    fromDate,
+    toDate,
+    minAmount,
+    maxAmount,
+    transactionType,
+    statusFilter,
+    categoryFilter,
+    selectedStatement,
+    pageSize,
+  ].join("|");
+  const [prevFilterKey, setPrevFilterKey] = useState(filterKey);
+  if (filterKey !== prevFilterKey) {
+    setPrevFilterKey(filterKey);
+    setCurrentPage(1);
   }
-};
 
- const filteredTransactions =
-  transactions.filter((txn) => {
+  /* -------------------------------------------------- Reconciliation */
+  const matchedTxnIds = useMemo(() => {
+    const ids = new Set();
+    transactions.forEach((txn) => {
+      if (isTxnMatched(txn, invoices)) ids.add(txn.id);
+    });
+    return ids;
+  }, [transactions, invoices]);
 
-    const matchesSearch =
-      txn.description
+  const isRowMatched = (txn) => matchedTxnIds.has(txn.id);
+
+  /* -------------------------------------------------------- Filtering */
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((txn) => {
+      const matchesSearch = txn.description
         ?.toLowerCase()
-        .includes(
-          searchTerm.toLowerCase()
-        );
+        .includes(searchTerm.toLowerCase());
 
-    const matchesStatement =
-      selectedStatement === ""
-        ? true
-        : txn.statementId ===
-          selectedStatement;
+      const matchesStatement =
+        selectedStatement === "" || txn.statementId === selectedStatement;
 
-    // DD/MM/YYYY -> YYYY-MM-DD
-    const txnDate = txn.date
-  ? txn.date.split("/").reverse().join("-")
-  : "";
+      const txnDate = toISODate(txn.date);
+      const matchesFromDate = fromDate === "" || txnDate >= fromDate;
+      const matchesToDate = toDate === "" || txnDate <= toDate;
 
-    const matchesFromDate =
-      fromDate === ""
-        ? true
-        : txnDate >= fromDate;
+      const amount = Number(txn.debit || txn.credit || 0);
+      const matchesMin = minAmount === "" || amount >= Number(minAmount);
+      const matchesMax = maxAmount === "" || amount <= Number(maxAmount);
 
-    const matchesToDate =
-      toDate === ""
-        ? true
-        : txnDate <= toDate;
+      const matchesType =
+        transactionType === "all"
+          ? true
+          : transactionType === "debit"
+          ? Number(txn.debit || 0) > 0
+          : Number(txn.credit || 0) > 0;
 
-        const amount =
-  Number(
-    txn.debit ||
-    txn.credit ||
+      const matchesCategory =
+        categoryFilter === "All" || txn.category === categoryFilter;
+
+      const matchesStatus =
+        statusFilter === "all"
+          ? true
+          : statusFilter === "matched"
+          ? matchedTxnIds.has(txn.id)
+          : !matchedTxnIds.has(txn.id);
+
+      return (
+        matchesSearch &&
+        matchesStatement &&
+        matchesFromDate &&
+        matchesToDate &&
+        matchesMin &&
+        matchesMax &&
+        matchesType &&
+        matchesCategory &&
+        matchesStatus
+      );
+    });
+  }, [
+    transactions,
+    searchTerm,
+    selectedStatement,
+    fromDate,
+    toDate,
+    minAmount,
+    maxAmount,
+    transactionType,
+    categoryFilter,
+    statusFilter,
+    matchedTxnIds,
+  ]);
+
+  /* ---------------------------------------------------------- Derived */
+  const totalDebit = filteredTransactions.reduce(
+    (sum, t) => sum + Number(t.debit || 0),
     0
   );
+  const totalCredit = filteredTransactions.reduce(
+    (sum, t) => sum + Number(t.credit || 0),
+    0
+  );
+  const matchedCount = filteredTransactions.filter(isRowMatched).length;
+  const unmatchedCount = filteredTransactions.length - matchedCount;
 
-const matchesMinAmount =
-  minAmount === ""
-    ? true
-    : amount >=
-      Number(minAmount);
-
-      const matchesMaxAmount =
-  maxAmount === ""
-    ? true
-    : amount <= Number(maxAmount);
-
-    const matchesType =
-  transactionType === "all"
-    ? true
-    : transactionType ===
-      "debit"
-    ? Number(txn.debit || 0) > 0
-    : Number(txn.credit || 0) > 0;
-
-    const matchesCategory =
-  categoryFilter === "All"
-    ? true
-    : txn.category ===
-      categoryFilter;
-
-  return (
-  matchesSearch &&
-  matchesStatement &&
-  matchesFromDate &&
-  matchesToDate &&
-  matchesMinAmount &&
-  matchesMaxAmount &&
-  matchesType &&
-  matchesCategory
-);
-  });
-
-  const totalPages = Math.ceil(
-  filteredTransactions.length / pageSize
-);
-
-const startIndex =
-  (currentPage - 1) * pageSize;
-
-const paginatedTransactions =
-  filteredTransactions.slice(
+  const totalPages = Math.ceil(filteredTransactions.length / pageSize);
+  const startIndex = (currentPage - 1) * pageSize;
+  const paginated = filteredTransactions.slice(
     startIndex,
     startIndex + pageSize
   );
 
+  /* ----------------------------------------------------------- Actions */
   const exportToExcel = () => {
-  const worksheet = XLSX.utils.json_to_sheet(
-    filteredTransactions
-  );
-
-  const workbook = XLSX.utils.book_new();
-
-  XLSX.utils.book_append_sheet(
-    workbook,
-    worksheet,
-    "Transactions"
-  );
-
-  XLSX.writeFile(
-    workbook,
-    "transactions.xlsx"
-  );
-};
-
-  const totalDebit = filteredTransactions.reduce(
-    (sum, txn) => sum + Number(txn.debit || 0),
-    0
-  );
-
-  const totalCredit = filteredTransactions.reduce(
-    (sum, txn) => sum + Number(txn.credit || 0),
-    0
-  );
-
-  const currentBalance =
-    filteredTransactions.length > 0
-      ? filteredTransactions[
-          filteredTransactions.length - 1
-        ].balance
-      : 0;
-
-  return (
-     <>
-    <Navbar />
-    <div className="min-h-screen bg-slate-100 p-6">
-      <div className="max-w-7xl mx-auto">
-
-        {/* Header */}
-        <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-          <h1 className="text-3xl font-bold text-gray-800">
-            Transactions Dashboard
-          </h1>
-
-          <p className="text-gray-500 mt-2">
-            Total Transactions:
-            <span className="font-semibold text-blue-600 ml-2">
-              {filteredTransactions.length}
-            </span>
-          </p>
-        </div>
-
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-
-          <div className="bg-white rounded-xl shadow-md p-5">
-            <h3 className="text-gray-500 text-sm">
-              Total Transactions
-            </h3>
-
-            <p className="text-3xl font-bold text-blue-600 mt-2">
-              {filteredTransactions.length}
-            </p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-md p-5">
-            <h3 className="text-gray-500 text-sm">
-              Total Debit
-            </h3>
-
-            <p className="text-3xl font-bold text-red-500 mt-2">
-              ₹ {totalDebit.toFixed(2)}
-            </p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-md p-5">
-            <h3 className="text-gray-500 text-sm">
-              Total Credit
-            </h3>
-
-            <p className="text-3xl font-bold text-green-500 mt-2">
-              ₹ {totalCredit.toFixed(2)}
-            </p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-md p-5">
-            <h3 className="text-gray-500 text-sm">
-              Current Balance
-            </h3>
-
-            <p className="text-3xl font-bold text-purple-600 mt-2">
-              ₹ {currentBalance}
-            </p>
-          </div>
-
-        </div>
-
-        {/* Search Box */}
-        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
-          <input
-            type="text"
-            placeholder="Search by description..."
-            value={searchTerm}
-           onChange={(e) => {
-  setSearchTerm(e.target.value);
-  setCurrentPage(1);
-}} 
-            className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
-
-  <h3 className="font-semibold mb-3">
-    Filter By Date
-  </h3>
-
-  <div className="grid md:grid-cols-2 gap-4">
-
-    <input
-      type="date"
-      value={fromDate}
-      onChange={(e) => {
-  setFromDate(e.target.value);
-  setCurrentPage(1);
-}}
-      className="border border-gray-300 rounded-lg px-4 py-2"
-    />
-
-    <input
-      type="date"
-      value={toDate}
-     onChange={(e) => {
-  setToDate(e.target.value);
-  setCurrentPage(1);
-}}
-      className="border border-gray-300 rounded-lg px-4 py-2"
-    />
-
-  </div>
-
-</div>
-
-<div className="bg-white rounded-xl shadow-md p-4 mb-6">
-
-  <h3 className="font-semibold mb-3">
-    Minimum Amount
-  </h3>
-
-  <input
-    type="number"
-    placeholder="Enter Minimum Amount"
-    value={minAmount}
-    onChange={(e) => {
-      setMinAmount(e.target.value);
-      setCurrentPage(1);
-    }}
-    className="w-full border border-gray-300 rounded-lg px-4 py-2"
-  />
-
-</div>
-
-<div className="bg-white rounded-xl shadow-md p-4 mb-6">
-
-  <h3 className="font-semibold mb-3">
-    Maximum Amount
-  </h3>
-
-  <input
-    type="number"
-    placeholder="Enter Maximum Amount"
-    value={maxAmount}
-    onChange={(e) => {
-      setMaxAmount(e.target.value);
-      setCurrentPage(1);
-    }}
-    className="w-full border border-gray-300 rounded-lg px-4 py-2"
-  />
-
-</div>
-
-<div className="bg-white rounded-xl shadow-md p-4 mb-6">
-
-  <h3 className="font-semibold mb-3">
-    Transaction Type
-  </h3>
-
-  <select
-    value={transactionType}
-    onChange={(e) => {
-      setTransactionType(
-        e.target.value
-      );
-      setCurrentPage(1);
-    }}
-    className="w-full border border-gray-300 rounded-lg px-4 py-2"
-  >
-    <option value="all">
-      All
-    </option>
-
-    <option value="debit">
-      Debit
-    </option>
-
-    <option value="credit">
-      Credit
-    </option>
-
-  </select>
-
-</div>
-
-<div className="bg-white rounded-xl shadow-md p-4 mb-6">
-  <label className="block font-medium mb-2">
-    Category
-  </label>
-
-  <select
-    value={categoryFilter}
-    onChange={(e) =>
-      setCategoryFilter(
-        e.target.value
-      )
-    }
-    className="w-full border border-gray-300 rounded-lg px-4 py-2"
-  >
-    <option value="All">
-      All Categories
-    </option>
-
-    <option value="Salary">
-      Salary
-    </option>
-
-    <option value="Food">
-      Food
-    </option>
-
-    <option value="Rent">
-      Rent
-    </option>
-
-    <option value="Utility">
-      Utility
-    </option>
-
-    <option value="ATM">
-      ATM
-    </option>
-
-    <option value="Transfer">
-      Transfer
-    </option>
-
-    <option value="Other">
-      Other
-    </option>
-  </select>
-</div>
-
-        <div className="bg-white rounded-xl shadow-md p-4 mb-6">
-  <label className="block font-semibold mb-2">
-    Select Statement
-  </label>
-
-  <select
-    value={selectedStatement}
-   onChange={(e) => {
-  setSelectedStatement(
-    e.target.value
-  );
-  setCurrentPage(1);
-}}
-    className="w-full border border-gray-300 rounded-lg px-4 py-2"
-  >
-    <option value="">
-      All Statements
-    </option>
-
-    {statements.map(
-      (statement) => (
-        <option
-          key={statement.id}
-          value={statement.id}
-        >
-          {statement.bank} -
-          {" "}
-          {statement.transactionCount}
-          {" "}
-          Transactions
-        </option>
-      )
-    )}
-  </select>
-</div>
-        <div className="mb-4">
-  <select
-    value={pageSize}
-    onChange={(e) => {
-      setPageSize(
-        Number(e.target.value)
-      );
-      setCurrentPage(1);
-    }}
-    className="border px-3 py-2 rounded-lg"
-  >
-    <option value={10}>10</option>
-    <option value={25}>25</option>
-    <option value={50}>50</option>
-    <option value={100}>100</option>
-  </select>
-</div>
-        <div className="mb-6">
-        <div className="mb-4 text-gray-600">
-  Showing {paginatedTransactions.length}
-  {" "}of{" "}
-  {filteredTransactions.length}
-  {" "}transactions
-</div>
-
-<div className="flex flex-wrap gap-2 mb-4">
-
- {searchTerm && (
-  <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full flex items-center gap-2">
-
-    Search: {searchTerm}
-
-    <button
-      onClick={() =>
-        setSearchTerm("")
-      }
-    >
-      ✕
-    </button>
-
-  </div>
-)}
-
-  {fromDate && (
-    <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full">
-      From: {fromDate}
-    </div>
-  )}
-
-  {toDate && (
-    <div className="bg-green-100 text-green-700 px-3 py-1 rounded-full">
-      To: {toDate}
-    </div>
-  )}
-
-  {minAmount && (
-    <div className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full">
-      Min: ₹{minAmount}
-    </div>
-  )}
-
-  {maxAmount && (
-    <div className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full">
-      Max: ₹{maxAmount}
-    </div>
-  )}
-
-  {transactionType !== "all" && (
-    <div className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full">
-      Type: {transactionType}
-    </div>
-  )}
-
-</div>
-
-<button
-  onClick={() => {
+    const ws = XLSX.utils.json_to_sheet(filteredTransactions);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Transactions");
+    XLSX.writeFile(wb, "transactions.xlsx");
+  };
+
+  const resetFilters = () => {
     setSearchTerm("");
     setFromDate("");
     setToDate("");
     setMinAmount("");
     setMaxAmount("");
     setTransactionType("all");
+    setStatusFilter("all");
+    setCategoryFilter("All");
     setSelectedStatement("");
-    setCurrentPage(1);
-  }}
-  className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-lg shadow-md mr-3"
->
-  Reset Filters
-</button>
+  };
 
-  <button
-    onClick={exportToExcel}
-    className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg shadow-md"
-  >
-    Export Excel
-  </button>
-</div>
+  const activeChips = [
+    searchTerm && { label: `Search: ${searchTerm}`, clear: () => setSearchTerm("") },
+    fromDate && { label: `From: ${fromDate}`, clear: () => setFromDate("") },
+    toDate && { label: `To: ${toDate}`, clear: () => setToDate("") },
+    minAmount && { label: `Min: ₹${minAmount}`, clear: () => setMinAmount("") },
+    maxAmount && { label: `Max: ₹${maxAmount}`, clear: () => setMaxAmount("") },
+    transactionType !== "all" && {
+      label: `Type: ${transactionType}`,
+      clear: () => setTransactionType("all"),
+    },
+    statusFilter !== "all" && {
+      label: `Status: ${statusFilter}`,
+      clear: () => setStatusFilter("all"),
+    },
+    categoryFilter !== "All" && {
+      label: `Category: ${categoryFilter}`,
+      clear: () => setCategoryFilter("All"),
+    },
+  ].filter(Boolean);
 
-        {/* Table */}
-        <div className="bg-white rounded-xl shadow-md overflow-hidden">
-
-          <div className="px-6 py-4 border-b">
-            <h2 className="text-xl font-semibold">
-              Transaction History
-            </h2>
+  /* -------------------------------------------------------------- View */
+  return (
+    <>
+      <Navbar />
+      <div className="min-h-screen bg-slate-50 p-4 sm:p-6">
+        <div className="mx-auto max-w-7xl">
+          {/* Header */}
+          <div className="mb-6">
+            <h1 className="text-2xl font-bold text-slate-900">Transactions</h1>
+            <p className="mt-1 text-sm text-slate-500">
+              {filteredTransactions.length} of {transactions.length}{" "}
+              transactions
+            </p>
           </div>
-          {error && (
-  <div className="p-4 m-4 bg-red-100 text-red-700 rounded-lg">
-    {error}
-  </div>
-)}
-    {loading ? (
-  <div className="p-6">
-    {[...Array(5)].map((_, index) => (
-      <div
-        key={index}
-        className="animate-pulse flex gap-4 border-b py-4"
-      >
-        <div className="h-4 bg-gray-300 rounded w-24"></div>
 
-        <div className="h-4 bg-gray-300 rounded flex-1"></div>
+          {/* Summary cards */}
+          <div className="mb-6 grid grid-cols-2 gap-4 lg:grid-cols-5">
+            <StatCard label="Transactions" value={filteredTransactions.length} />
+            <StatCard
+              label="Total Debit"
+              value={formatCurrency(totalDebit)}
+              accent="debit"
+            />
+            <StatCard
+              label="Total Credit"
+              value={formatCurrency(totalCredit)}
+              accent="credit"
+            />
+            <StatCard label="Matched" value={matchedCount} accent="matched" />
+            <StatCard
+              label="Unmatched"
+              value={unmatchedCount}
+              accent="unmatched"
+            />
+          </div>
 
-        <div className="h-4 bg-gray-300 rounded w-20"></div>
+          {/* Tabs */}
+          <div className="mb-6 flex gap-2 border-b border-slate-200">
+            <TabButton
+              active={tab === "transactions"}
+              onClick={() => setTab("transactions")}
+            >
+              Transactions
+            </TabButton>
+            <TabButton
+              active={tab === "reconciliation"}
+              onClick={() => setTab("reconciliation")}
+            >
+              Reconciliation
+            </TabButton>
+          </div>
 
-        <div className="h-4 bg-gray-300 rounded w-20"></div>
+          {tab === "transactions" ? (
+            <>
+              {/* Filter bar */}
+              <Card className="mb-6 p-4">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                  <Input
+                    type="text"
+                    placeholder="Search by description..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="sm:flex-1"
+                  />
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      onClick={() => setShowFilters((v) => !v)}
+                    >
+                      Filters {showFilters ? "▴" : "▾"}
+                    </Button>
+                    <Button variant="secondary" onClick={resetFilters}>
+                      Reset
+                    </Button>
+                    <Button onClick={exportToExcel}>Export</Button>
+                  </div>
+                </div>
 
-        <div className="h-4 bg-gray-300 rounded w-24"></div>
-      </div>
-    ))}
-  </div>
-) : (
-           <div className="overflow-x-auto max-h-[600px] overflow-y-auto">
-
-              <table className="w-full">
-
-              <thead className="sticky top-0 z-10 bg-blue-600">
-                  <tr className="bg-blue-600 text-white">
-                    <th className="px-4 py-3 text-left">
-                      Date
-                    </th>
-
-                    <th className="px-4 py-3 text-left">
-                      Description
-                    </th>
-
-                    <th className="px-4 py-3 text-right">
-                      Debit
-                    </th>
-
-                    <th className="px-4 py-3 text-right">
-                      Credit
-                    </th>
-
-                    <th className="px-4 py-3 text-right">
-                      Balance
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody>
-
-                 {paginatedTransactions.map(
-                    (txn, index) => (
-                      <tr
-                        key={txn.id}
-                        className={`border-b hover:bg-blue-50 transition ${
-                          index % 2 === 0
-                            ? "bg-white"
-                            : "bg-gray-50"
-                        }`}
+                {showFilters && (
+                  <div className="mt-4 grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 sm:grid-cols-2 lg:grid-cols-3">
+                    <Field label="From Date">
+                      <Input
+                        type="date"
+                        value={fromDate}
+                        onChange={(e) => setFromDate(e.target.value)}
+                      />
+                    </Field>
+                    <Field label="To Date">
+                      <Input
+                        type="date"
+                        value={toDate}
+                        onChange={(e) => setToDate(e.target.value)}
+                      />
+                    </Field>
+                    <Field label="Statement">
+                      <Select
+                        value={selectedStatement}
+                        onChange={(e) => setSelectedStatement(e.target.value)}
                       >
-                        <td className="px-4 py-3">
-                          {txn.date}
-                        </td>
+                        <option value="">All Statements</option>
+                        {statements.map((s) => (
+                          <option key={s.id} value={s.id}>
+                            {s.bank} — {s.transactionCount} txns
+                          </option>
+                        ))}
+                      </Select>
+                    </Field>
+                    <Field label="Min Amount">
+                      <Input
+                        type="number"
+                        placeholder="0"
+                        value={minAmount}
+                        onChange={(e) => setMinAmount(e.target.value)}
+                      />
+                    </Field>
+                    <Field label="Max Amount">
+                      <Input
+                        type="number"
+                        placeholder="Any"
+                        value={maxAmount}
+                        onChange={(e) => setMaxAmount(e.target.value)}
+                      />
+                    </Field>
+                    <Field label="Type">
+                      <Select
+                        value={transactionType}
+                        onChange={(e) => setTransactionType(e.target.value)}
+                      >
+                        <option value="all">All</option>
+                        <option value="debit">Debit</option>
+                        <option value="credit">Credit</option>
+                      </Select>
+                    </Field>
+                    <Field label="Status">
+                      <Select
+                        value={statusFilter}
+                        onChange={(e) => setStatusFilter(e.target.value)}
+                      >
+                        <option value="all">All</option>
+                        <option value="matched">Matched</option>
+                        <option value="unmatched">Unmatched</option>
+                      </Select>
+                    </Field>
+                    <Field label="Category">
+                      <Select
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                      >
+                        {CATEGORIES.map((c) => (
+                          <option key={c} value={c}>
+                            {c === "All" ? "All Categories" : c}
+                          </option>
+                        ))}
+                      </Select>
+                    </Field>
+                    <Field label="Rows per page">
+                      <Select
+                        value={pageSize}
+                        onChange={(e) => setPageSize(Number(e.target.value))}
+                      >
+                        {[10, 25, 50, 100].map((n) => (
+                          <option key={n} value={n}>
+                            {n}
+                          </option>
+                        ))}
+                      </Select>
+                    </Field>
+                  </div>
+                )}
 
-                        <td className="px-4 py-3 font-medium">
-                          {txn.description}
-                        </td>
+                {activeChips.length > 0 && (
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {activeChips.map((chip, i) => (
+                      <button
+                        key={i}
+                        onClick={chip.clear}
+                        className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-3 py-1 text-xs font-medium text-slate-600 hover:bg-slate-200"
+                      >
+                        {chip.label}
+                        <span className="text-slate-400">✕</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </Card>
 
-                        <td className="px-4 py-3 text-right text-red-600">
-                          {txn.debit || "-"}
-                        </td>
+              {error && (
+                <div className="mb-6 rounded-lg border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+                  {error}
+                </div>
+              )}
 
-                        <td className="px-4 py-3 text-right text-green-600">
-                          {txn.credit || "-"}
-                        </td>
+              {/* Table */}
+              <Card className="overflow-hidden">
+                <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+                  <h2 className="font-semibold text-slate-800">
+                    Transaction History
+                  </h2>
+                  <Badge variant="neutral">
+                    {paginated.length} shown
+                  </Badge>
+                </div>
 
-                        <td className="px-4 py-3 text-right font-semibold">
-                          ₹ {txn.balance}
-                        </td>
-                      </tr>
-                    )
-                  )}
+                <TransactionsTable
+                  rows={paginated}
+                  loading={loading}
+                  isEmpty={!loading && filteredTransactions.length === 0}
+                  isMatched={isRowMatched}
+                />
 
-                </tbody>
-
-              </table>
-
-             {filteredTransactions.length === 0 && !loading && (
-  <div className="p-10 text-center">
-    <div className="text-6xl mb-4">
-      📄
-    </div>
-
-    <h3 className="text-2xl font-semibold text-gray-700">
-      No Transactions Found
-    </h3>
-
-    <p className="text-gray-500 mt-2">
-      Try changing your search term or upload a bank statement.
-    </p>
-  </div>
-)}
-
-              <div className="flex justify-center items-center gap-4 p-6">
-
-  <button
-    disabled={currentPage === 1}
-    onClick={() =>
-      setCurrentPage(
-        currentPage - 1
-      )
-    }
-    className="bg-gray-300 px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-  >
-    Prev
-  </button>
-
-  <span>
-    Page {currentPage} of {totalPages}
-  </span>
-
-  <button 
-   disabled={
-  currentPage >= totalPages ||
-  totalPages === 0
-}
-    onClick={() =>
-      setCurrentPage(
-        currentPage + 1
-      )
-    }
-    className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-  >
-    Next
-  </button>
-
-</div>
-
-            </div>
+                {filteredTransactions.length > 0 && (
+                  <div className="flex items-center justify-center gap-4 border-t border-slate-200 p-4">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={currentPage === 1}
+                      onClick={() => setCurrentPage((p) => p - 1)}
+                    >
+                      Prev
+                    </Button>
+                    <span className="text-sm text-slate-500">
+                      Page {currentPage} of {totalPages || 1}
+                    </span>
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={currentPage >= totalPages || totalPages === 0}
+                      onClick={() => setCurrentPage((p) => p + 1)}
+                    >
+                      Next
+                    </Button>
+                  </div>
+                )}
+              </Card>
+            </>
+          ) : (
+            <ReconciliationTab
+              transactions={transactions}
+              invoices={invoices}
+            />
           )}
         </div>
-
       </div>
-    </div>
     </>
   );
-} 
+}

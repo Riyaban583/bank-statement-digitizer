@@ -1,5 +1,4 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import app from "./firebase/firebaseConfig";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Upload from "./pages/Upload";
 import Transactions from "./pages/Transactions";
@@ -8,10 +7,7 @@ import Signup from "./pages/Signup";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import Statements from "./pages/Statements";
-import Entries from "./pages/Entries";
 import Invoices from "./pages/Invoices";
-
-console.log(app);
 
 function App() {
   return (
@@ -46,15 +42,15 @@ function App() {
 
 <Route
   path="/entries"
-  element={
-    <ProtectedRoute>
-      <Entries />
-    </ProtectedRoute>
-  }
+  element={<Navigate to="/transactions" replace />}
 />
 <Route
   path="/invoices"
-  element={<Invoices />}
+  element={
+    <ProtectedRoute>
+      <Invoices />
+    </ProtectedRoute>
+  }
 />
         <Route
           path="/login"

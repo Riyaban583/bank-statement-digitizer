@@ -134,10 +134,7 @@ export const saveTransactionsBatch =
                 "transactions",
                 transactionId
               );
-console.log(
-  "Saving transaction with userId:",
-  userId
-);
+
            batch.set(
   transactionRef,
   {
@@ -157,10 +154,6 @@ console.log(
 
         await batch.commit();
       }
-
-      console.log(
-        "Transactions saved successfully"
-      );
     } catch (error) {
       console.error(
         "Error saving transactions:",

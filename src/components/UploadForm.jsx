@@ -1,17 +1,19 @@
 import { useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
-import { parseTransactions } from "../services/transactionParser";
+import {
+  parseTransactions,
+  detectBank,
+} from "../services/transactionParser";
 import { auth } from "../firebase/firebaseConfig";
 import {
   createStatement,
   saveTransactionsBatch,
 } from "../services/firestoreService";
-import {
-  ToastContainer,
-  toast,
-} from "react-toastify";
-
+import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { Card, Button, Input, Select, Field } from "./ui";
+
+const BANK_OPTIONS = ["auto", "SBI", "HDFC", "ICICI", "AXIS", "Other"];
 
 // PDF Worker Setup
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -19,84 +21,50 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).toString();
 
+const MAX_SIZE = 20 * 1024 * 1024; // 20 MB
+
 export default function UploadForm() {
   const [file, setFile] = useState(null);
   const [password, setPassword] = useState("");
- const [, setPdfText] =
-  useState("");
-
-const [, setTransactions] =
-  useState([]);
-  // Future Storage Upload Progress
+  const [bank, setBank] = useState("auto");
   const [progress, setProgress] = useState(0);
+  const [dragActive, setDragActive] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Future Drag & Drop
-  const [dragActive, setDragActive] =
-    useState(false);
-    const [loading, setLoading] =
-  useState(false);
-
-  const handleFileChange = (e) => {
-    const selectedFile =
-      e.target.files[0];
-
+  const validateAndSet = (selectedFile) => {
     if (!selectedFile) return;
 
-    // PDF Validation
-    if (
-      selectedFile.type !==
-      "application/pdf"
-    ) {
+    if (selectedFile.type !== "application/pdf") {
       toast.error("Only PDF files are allowed.");
       return;
     }
 
-    // 20 MB Validation
-    if (
-      selectedFile.size >
-      20 * 1024 * 1024
-    ) {
+    if (selectedFile.size > MAX_SIZE) {
       toast.error("File size must be less than 20 MB.");
       return;
     }
 
     setFile(selectedFile);
   };
+
+  const handleFileChange = (e) => validateAndSet(e.target.files[0]);
+
   const handleDrop = (e) => {
-  e.preventDefault();
-  setDragActive(false);
+    e.preventDefault();
+    setDragActive(false);
+    validateAndSet(e.dataTransfer.files[0]);
+  };
 
-  const droppedFile = e.dataTransfer.files[0];
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setDragActive(true);
+  };
 
-  if (!droppedFile) return;
-
-  if (droppedFile.type !== "application/pdf") {
- toast.error("Only PDF files are allowed.");
-    return;
-  }
-
-  if (droppedFile.size > 20 * 1024 * 1024) {
-   toast.error("File size must be less than 20 MB.");
-    return;
-  }
-
-  setFile(droppedFile);
-};
-
-const handleDragOver = (e) => {
-  e.preventDefault();
-  setDragActive(true);
-};
-
-const handleDragLeave = () => {
-  setDragActive(false);
-};
+  const handleDragLeave = () => setDragActive(false);
 
   const handleUpload = async () => {
     if (!file) {
-     toast.warning(
-  "Please select a PDF file"
-);
+      toast.warning("Please select a PDF file");
       return;
     }
 
@@ -104,282 +72,167 @@ const handleDragLeave = () => {
       setLoading(true);
       setProgress(10);
 
-      const arrayBuffer =
-        await file.arrayBuffer();
-
-      const pdf =
-        await pdfjsLib.getDocument({
-          data: arrayBuffer,
-          password,
-        }).promise;
-
-      console.log(
-        "PDF Loaded Successfully"
-      );
-
-      console.log(
-        "Total Pages:",
-        pdf.numPages
-      );
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({
+        data: arrayBuffer,
+        password,
+      }).promise;
 
       setProgress(30);
 
       let fullText = "";
 
-      for (
-        let pageNum = 1;
-        pageNum <= pdf.numPages;
-        pageNum++
-      ) {
-        const page =
-          await pdf.getPage(pageNum);
+      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+        const page = await pdf.getPage(pageNum);
+        const textContent = await page.getTextContent();
 
-        const textContent =
-          await page.getTextContent();
+        if (textContent.items.length === 0) {
+          toast.warning(
+            "This looks like a scanned PDF. OCR is not supported yet."
+          );
+          setLoading(false);
+          setProgress(0);
+          return;
+        }
 
-          if (
-  textContent.items.length ===
-  0
-) {
-  toast.warning(
-    "This looks like a scanned PDF. OCR is not supported yet."
-  );
+        const pageText = textContent.items
+          .map((item) => item.str)
+          .join(" ");
 
-  setLoading(false);
-  setProgress(0);
-  return;
-}
-
-        const pageText =
-          textContent.items
-            .map(
-              (item) => item.str
-            )
-            .join(" ");
-
-        fullText +=
-          pageText + "\n";
+        fullText += pageText + "\n";
       }
 
       setProgress(60);
 
-      setPdfText(fullText);
-      console.log(fullText);
+      const parsedTransactions = parseTransactions(fullText);
 
-      const parsedTransactions =
-        parseTransactions(
-          fullText
-        );
+      if (!parsedTransactions || parsedTransactions.length === 0) {
+        setProgress(0);
+        setLoading(false);
+        toast.error("No transactions found in this PDF.");
+        return;
+      }
 
-        console.log("PARSED");
-console.log(parsedTransactions);
+      const resolvedBank =
+        bank === "auto" ? detectBank(fullText) : bank;
 
-        if (
-  !parsedTransactions ||
-  parsedTransactions.length === 0
-) {
-  setProgress(0);
-   setLoading(false);
-  toast.error(
-  "No transactions found in this PDF."
-);
-  return;
-}
+      const statementId = await createStatement({
+        bank: resolvedBank,
+        userId: auth.currentUser.uid,
+        transactionCount: parsedTransactions.length,
+      });
 
-      setTransactions(
-        parsedTransactions
+      await saveTransactionsBatch(
+        parsedTransactions,
+        statementId,
+        auth.currentUser.uid
       );
-
-      console.log(
-        "Transactions:"
-      );
-
-      console.log(
-        parsedTransactions
-      );
-
-      console.log(
-        "Transaction Count:",
-        parsedTransactions.length
-      );
-console.log("Current User:", auth.currentUser);
-console.log("UID:", auth.currentUser?.uid);
-console.log(
-  "Saving transactions for UID:",
-  auth.currentUser.uid
-);
-    try {
-  const statementId = await createStatement({
-  bank: "SBI",
-  userId: auth.currentUser.uid,
-  transactionCount: parsedTransactions.length,
-});
-
-  console.log("Statement Created:", statementId);
-
-  await saveTransactionsBatch(
-    parsedTransactions,
-    statementId,
-    auth.currentUser.uid
-  );
-
-  console.log("Transactions Saved");
-
-} catch (err) {
-  console.error("Exact Error:", err);
-}
 
       setProgress(100);
       setLoading(false);
+      setFile(null);
 
-     toast.success(
-  `PDF Loaded Successfully (${pdf.numPages} pages)`
-);
-
-   } catch (error) {
-  console.error("PDF Error:", error);
-
-  if (
-    error?.name === "PasswordException"
-  ) {
-    toast.error(
-      "WRONG_PASSWORD"
-    );
-  } else if (
-    error?.message?.includes(
-      "Invalid PDF"
-    )
-  ) {
-    toast.error(
-      "CORRUPT_PDF"
-    );
-  } else {
-    toast.error(
-      "PARSE_FAILED"
-    );
-  }
-
-  setProgress(0);
-  setLoading(false);
-}
+      toast.success(
+        `${resolvedBank} statement saved (${parsedTransactions.length} transactions)`
+      );
+    } catch (error) {
+      if (error?.name === "PasswordException") {
+        toast.error("Wrong PDF password.");
+      } else if (error?.message?.includes("Invalid PDF")) {
+        toast.error("The PDF file appears to be corrupt.");
+      } else {
+        toast.error("Failed to parse the PDF.");
+      }
+      setProgress(0);
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 py-10 px-4">
-    <ToastContainer
-  position="top-right"
-  autoClose={3000}
-/>
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-slate-50 px-4 py-10">
+      <ToastContainer position="top-right" autoClose={3000} />
 
-        <div className="bg-gradient-to-r from-blue-600 to-indigo-700 text-white rounded-2xl p-8 shadow-lg mb-8">
-          <h1 className="text-4xl font-bold">
-            Bank Statement
-            Digitizer
-          </h1>
-
-          <p className="mt-2 text-blue-100">
-            Upload, Parse and
-            Store Bank
-            Transactions
+      <div className="mx-auto max-w-3xl">
+        {/* Header */}
+        <div className="mb-6 rounded-2xl bg-slate-900 p-8 text-white">
+          <h1 className="text-2xl font-bold">Bank Statement Digitizer</h1>
+          <p className="mt-2 text-sm text-slate-300">
+            Upload, parse and store your bank transactions.
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
-
-          <label className="block text-lg font-semibold mb-3">
-            Upload PDF
-            Statement
+        {/* Dropzone */}
+        <Card className="mb-6 p-6">
+          <label className="mb-3 block text-sm font-semibold text-slate-700">
+            Upload PDF Statement
           </label>
 
-         <div
-  onDrop={handleDrop}
-  onDragOver={handleDragOver}
-  onDragLeave={handleDragLeave}
-  className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-    dragActive
-      ? "border-blue-600 bg-blue-50"
-      : "border-blue-300"
-  }`}
->
-  <p className="font-medium text-lg">
-    Drag & Drop PDF Here
-  </p>
-
-  <p className="text-gray-500 my-3">
-    or
-  </p>
-
-  <input
-    type="file"
-    accept=".pdf"
-    onChange={handleFileChange}
-    className="block mx-auto"
-  />
-</div>
+          <div
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            className={`rounded-xl border-2 border-dashed p-8 text-center transition ${
+              dragActive
+                ? "border-slate-900 bg-slate-50"
+                : "border-slate-300"
+            }`}
+          >
+            <p className="font-medium text-slate-700">Drag &amp; Drop PDF here</p>
+            <p className="my-2 text-sm text-slate-400">or</p>
+            <input
+              type="file"
+              accept=".pdf"
+              onChange={handleFileChange}
+              className="block w-full text-sm text-slate-600 file:mr-4 file:rounded-lg file:border-0 file:bg-slate-900 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white hover:file:bg-slate-800"
+            />
+          </div>
 
           {file && (
-            <div className="mt-4 bg-green-50 border border-green-200 rounded-xl p-4">
-              <p className="text-green-700 font-medium">
-                Selected File:
-                {" "}
-                {file.name}
-              </p>
+            <div className="mt-4 rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm font-medium text-emerald-700">
+              Selected: {file.name}
             </div>
           )}
-        </div>
+        </Card>
 
-        <div className="bg-white rounded-2xl shadow-md p-6 mb-6">
+        {/* Details */}
+        <Card className="mb-6 p-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <Field label="Bank">
+              <Select value={bank} onChange={(e) => setBank(e.target.value)}>
+                {BANK_OPTIONS.map((b) => (
+                  <option key={b} value={b}>
+                    {b === "auto" ? "Auto-detect" : b}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+            <Field label="PDF Password (optional)">
+              <Input
+                type="password"
+                placeholder="Enter PDF password if protected"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </Field>
+          </div>
+        </Card>
 
-          <label className="block text-lg font-semibold mb-3">
-            PDF Password
-          </label>
-
-          <input
-            type="password"
-            placeholder="Enter PDF Password"
-            value={password}
-            onChange={(e) =>
-              setPassword(
-                e.target.value
-              )
-            }
-            className="w-full border border-gray-300 rounded-xl px-4 py-3"
-          />
-        </div>
-
-        {/* Progress Bar */}
-
+        {/* Progress */}
         {progress > 0 && (
           <div className="mb-6">
-            <div className="w-full bg-gray-200 rounded-full h-4">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-slate-200">
               <div
-                className="bg-blue-600 h-4 rounded-full transition-all duration-300"
-                style={{
-                  width: `${progress}%`,
-                }}
+                className="h-2 rounded-full bg-slate-900 transition-all duration-300"
+                style={{ width: `${progress}%` }}
               />
             </div>
-
-            <p className="mt-2 text-sm text-gray-600">
-              {progress}%
-            </p>
+            <p className="mt-2 text-xs text-slate-500">{progress}%</p>
           </div>
         )}
 
-        <button
-  onClick={handleUpload}
-  disabled={loading}
-  className={`text-white font-semibold px-8 py-3 rounded-xl shadow-md transition ${
-    loading
-      ? "bg-gray-400 cursor-not-allowed"
-      : "bg-blue-600 hover:bg-blue-700"
-  }`}
->
-  {loading
-    ? "Processing..."
-    : "Upload & Parse"}
-</button>
+        <Button size="lg" onClick={handleUpload} disabled={loading}>
+          {loading ? "Processing..." : "Upload & Parse"}
+        </Button>
       </div>
     </div>
   );

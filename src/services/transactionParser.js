@@ -1,3 +1,19 @@
+// Detects the bank from raw statement text. Returns a bank code or "Unknown".
+const BANK_SIGNATURES = [
+  { code: "SBI", patterns: ["state bank of india", "sbi"] },
+  { code: "HDFC", patterns: ["hdfc"] },
+  { code: "ICICI", patterns: ["icici"] },
+  { code: "AXIS", patterns: ["axis bank", "axis"] },
+];
+
+export function detectBank(text) {
+  const lower = (text || "").toLowerCase();
+  for (const { code, patterns } of BANK_SIGNATURES) {
+    if (patterns.some((p) => lower.includes(p))) return code;
+  }
+  return "Unknown";
+}
+
 export function parseTransactions(text) {
   const transactions = [];
 
@@ -16,7 +32,7 @@ export function parseTransactions(text) {
 
 let debit = "";
 let credit = "";
-let balance = "";
+let balance;
 
 if (match[5]) {
   balance = match[5];
