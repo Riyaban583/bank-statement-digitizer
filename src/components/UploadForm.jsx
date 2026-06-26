@@ -202,20 +202,27 @@ console.log(parsedTransactions);
         "Transaction Count:",
         parsedTransactions.length
       );
+console.log("Current User:", auth.currentUser);
+console.log("UID:", auth.currentUser?.uid);
+    try {
+  const statementId = await createStatement({
+    userId: auth.currentUser.uid,
+    transactionCount: parsedTransactions.length,
+  });
 
-     const statementId =
-  await createStatement({
-     bank: "UNKNOWN",
-         userId: auth.currentUser.uid,
-          transactionCount:
-            parsedTransactions.length,
-        });
+  console.log("Statement Created:", statementId);
 
-      await saveTransactionsBatch(
-        parsedTransactions,
-        statementId,
-        auth.currentUser.uid
-      );
+  await saveTransactionsBatch(
+    parsedTransactions,
+    statementId,
+    auth.currentUser.uid
+  );
+
+  console.log("Transactions Saved");
+
+} catch (err) {
+  console.error("Exact Error:", err);
+}
 
       setProgress(100);
       setLoading(false);
