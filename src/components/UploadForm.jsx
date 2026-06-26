@@ -204,6 +204,10 @@ console.log(parsedTransactions);
       );
 console.log("Current User:", auth.currentUser);
 console.log("UID:", auth.currentUser?.uid);
+console.log(
+  "Saving transactions for UID:",
+  auth.currentUser.uid
+);
     try {
   const statementId = await createStatement({
     userId: auth.currentUser.uid,

@@ -132,7 +132,10 @@ export const saveTransactionsBatch =
                 "transactions",
                 transactionId
               );
-
+console.log(
+  "Saving transaction with userId:",
+  userId
+);
            batch.set(
   transactionRef,
   {
