@@ -95,9 +95,18 @@ export default function UploadForm() {
           return;
         }
 
-        const pageText = textContent.items
-          .map((item) => item.str)
-          .join(" ");
+       const pageText = textContent.items
+  .sort((a, b) => {
+    const yDiff = b.transform[5] - a.transform[5];
+
+    if (Math.abs(yDiff) > 5) {
+      return yDiff;
+    }
+
+    return a.transform[4] - b.transform[4];
+  })
+  .map((item) => item.str)
+  .join(" ");
 
         fullText += pageText + "\n";
       }

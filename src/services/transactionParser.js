@@ -37,27 +37,31 @@ let balance;
 if (match[5]) {
   balance = match[5];
 
-  if (
-    description
-      .toLowerCase()
-      .includes("salary")
-  ) {
-    credit = match[4];
-  } else {
-    debit = match[4];
-  }
+ const lowerDesc = description.toLowerCase();
+
+if (
+  lowerDesc.includes("salary") ||
+  lowerDesc.includes("interest") ||
+  lowerDesc.includes("cash deposit")
+) {
+  credit = match[4] === "-" ? "" : match[4];
+} else {
+  debit = match[4] === "-" ? "" : match[4];
+}
 } else {
   balance = match[4];
 
-  if (
-    description
-      .toLowerCase()
-      .includes("salary")
-  ) {
-    credit = match[3];
-  } else {
-    debit = match[3];
-  }
+ const lowerDesc = description.toLowerCase();
+
+if (
+  lowerDesc.includes("salary") ||
+  lowerDesc.includes("interest") ||
+  lowerDesc.includes("cash deposit")
+) {
+  credit = match[3] === "-" ? "" : match[3];
+} else {
+  debit = match[3] === "-" ? "" : match[3];
+}
 }
 
 transactions.push({
