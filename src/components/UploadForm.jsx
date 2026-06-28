@@ -33,17 +33,14 @@ export default function UploadForm() {
 
   const validateAndSet = (selectedFile) => {
     if (!selectedFile) return;
-
     if (selectedFile.type !== "application/pdf") {
       toast.error("Only PDF files are allowed.");
       return;
     }
-
     if (selectedFile.size > MAX_SIZE) {
       toast.error("File size must be less than 20 MB.");
       return;
     }
-
     setFile(selectedFile);
   };
 
@@ -95,25 +92,39 @@ export default function UploadForm() {
           return;
         }
 
-       const pageText = textContent.items
-  .sort((a, b) => {
-    const yDiff = b.transform[5] - a.transform[5];
+        // ✅ FIX: Items ko Y-position ke hisaab se lines mein group karo
+        // Pehle: sab items ek line mein join ho jaate the → regex match nahi hota
+        // Ab: har row alag line ban ti hai → regex sahi match karta hai
 
-    if (Math.abs(yDiff) > 5) {
-      return yDiff;
-    }
+        // Step 1: Sort by Y (top to bottom), then X (left to right)
+        const sorted = [...textContent.items].sort((a, b) => {
+          const yDiff = b.transform[5] - a.transform[5];
+          if (Math.abs(yDiff) > 5) return yDiff;
+          return a.transform[4] - b.transform[4];
+        });
 
-    return a.transform[4] - b.transform[4];
-  })
-  .map((item) => item.str)
-  .join(" ");
+        // Step 2: Group items with same Y into one line
+        const lineMap = new Map();
+        for (const item of sorted) {
+          const y = Math.round(item.transform[5]);
+          if (!lineMap.has(y)) lineMap.set(y, []);
+          lineMap.get(y).push(item.str);
+        }
 
-        fullText += pageText + "\n";
+        // Step 3: Sort lines top-to-bottom and join with "\n"
+        const pageLines = Array.from(lineMap.entries())
+          .sort((a, b) => b[0] - a[0])
+          .map(([, parts]) => parts.join(" ").trim())
+          .filter(Boolean)
+          .join("\n");
+
+        fullText += pageLines + "\n";
       }
 
       setProgress(60);
 
       const parsedTransactions = parseTransactions(fullText);
+      console.log("PARSED:", JSON.stringify(parsedTransactions.slice(0, 5), null, 2));
 
       if (!parsedTransactions || parsedTransactions.length === 0) {
         setProgress(0);

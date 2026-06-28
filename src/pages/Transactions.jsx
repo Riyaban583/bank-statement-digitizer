@@ -47,7 +47,7 @@ export default function Transactions() {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // Filters (initialised from URL so deep links work)
+  // Filters
   const [searchTerm, setSearchTerm] = useState(
     () => searchParams.get("search") || ""
   );
@@ -77,7 +77,18 @@ export default function Transactions() {
     const fetchCollection = async (name, uid) => {
       const q = query(collection(db, name), where("userId", "==", uid));
       const snapshot = await getDocs(q);
-      return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+      return snapshot.docs.map((doc) => {
+        const data = doc.data();
+        // ✅ FIX: debit/credit/balance ko Number mein convert karo
+        // Firestore kabhi kabhi string store kar leta hai
+        return {
+          id: doc.id,
+          ...data,
+          debit: Number(data.debit) || 0,
+          credit: Number(data.credit) || 0,
+          balance: Number(data.balance) || 0,
+        };
+      });
     };
 
     const load = async (uid) => {
@@ -87,6 +98,9 @@ export default function Transactions() {
           fetchCollection("statements", uid),
           fetchCollection("invoices", uid),
         ]);
+        // Sort by date ascending
+        const toISO = (d) => d ? d.split("/").reverse().join("-") : "";
+        txns.sort((a, b) => toISO(a.date).localeCompare(toISO(b.date)));
         setTransactions(txns);
         setStatements(stmts);
         setInvoices(invs);
@@ -128,8 +142,6 @@ export default function Transactions() {
     setSearchParams,
   ]);
 
-  // Reset to the first page whenever a filter changes.
-  // (adjust-state-during-render pattern — avoids an extra effect/render)
   const filterKey = [
     searchTerm,
     fromDate,
