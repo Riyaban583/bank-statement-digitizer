@@ -1,9 +1,6 @@
 import { useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
-import {
-  parseTransactions,
-  detectBank,
-} from "../services/transactionParser";
+import { parseStatement } from "../services/parser/index";
 import { auth } from "../firebase/firebaseConfig";
 import {
   createStatement,
@@ -13,7 +10,22 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Card, Button, Input, Select, Field } from "./ui";
 
-const BANK_OPTIONS = ["auto", "SBI", "HDFC", "ICICI", "AXIS", "Other"];
+const BANK_OPTIONS = [
+  "auto",
+  "SBI",
+  "HDFC",
+  "ICICI",
+  "AXIS",
+  "PNB",
+  "KOTAK",
+  "BOB",
+  "CANARA",
+  "UNION",
+  "IDFC",
+  "INDUSIND",
+  "AU",
+  "Other",
+];
 
 // PDF Worker Setup
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -70,80 +82,34 @@ export default function UploadForm() {
       setProgress(10);
 
       const arrayBuffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({
+      const pdfDoc = await pdfjsLib.getDocument({
         data: arrayBuffer,
         password,
       }).promise;
 
       setProgress(30);
 
-      let fullText = "";
-
-      for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-        const page = await pdf.getPage(pageNum);
-        const textContent = await page.getTextContent();
-
-        if (textContent.items.length === 0) {
-          toast.warning(
-            "This looks like a scanned PDF. OCR is not supported yet."
-          );
-          setLoading(false);
-          setProgress(0);
-          return;
-        }
-
-        // ✅ FIX: Items ko Y-position ke hisaab se lines mein group karo
-        // Pehle: sab items ek line mein join ho jaate the → regex match nahi hota
-        // Ab: har row alag line ban ti hai → regex sahi match karta hai
-
-        // Step 1: Sort by Y (top to bottom), then X (left to right)
-        const sorted = [...textContent.items].sort((a, b) => {
-          const yDiff = b.transform[5] - a.transform[5];
-          if (Math.abs(yDiff) > 5) return yDiff;
-          return a.transform[4] - b.transform[4];
-        });
-
-        // Step 2: Group items with same Y into one line
-        const lineMap = new Map();
-        for (const item of sorted) {
-          const y = Math.round(item.transform[5]);
-          if (!lineMap.has(y)) lineMap.set(y, []);
-          lineMap.get(y).push(item.str);
-        }
-
-        // Step 3: Sort lines top-to-bottom and join with "\n"
-        const pageLines = Array.from(lineMap.entries())
-          .sort((a, b) => b[0] - a[0])
-          .map(([, parts]) => parts.join(" ").trim())
-          .filter(Boolean)
-          .join("\n");
-
-        fullText += pageLines + "\n";
-      }
+      const { bank: detectedBank, transactions } = await parseStatement(pdfDoc);
 
       setProgress(60);
 
-      const parsedTransactions = parseTransactions(fullText);
-      console.log("PARSED:", JSON.stringify(parsedTransactions.slice(0, 5), null, 2));
-
-      if (!parsedTransactions || parsedTransactions.length === 0) {
+      if (!transactions || transactions.length === 0) {
         setProgress(0);
         setLoading(false);
         toast.error("No transactions found in this PDF.");
         return;
       }
 
-      const resolvedBank =
-        bank === "auto" ? detectBank(fullText) : bank;
+      const resolvedBank = bank === "auto" ? detectedBank : bank;
 
       const statementId = await createStatement({
         bank: resolvedBank,
         userId: auth.currentUser.uid,
-        transactionCount: parsedTransactions.length,
+        transactionCount: transactions.length,
       });
 
       await saveTransactionsBatch(
-        parsedTransactions,
+        transactions,
         statementId,
         auth.currentUser.uid
       );
@@ -153,13 +119,17 @@ export default function UploadForm() {
       setFile(null);
 
       toast.success(
-        `${resolvedBank} statement saved (${parsedTransactions.length} transactions)`
+        `${resolvedBank} statement saved (${transactions.length} transactions)`
       );
     } catch (error) {
       if (error?.name === "PasswordException") {
         toast.error("Wrong PDF password.");
       } else if (error?.message?.includes("Invalid PDF")) {
         toast.error("The PDF file appears to be corrupt.");
+      } else if (error?.message?.includes("scanned PDF")) {
+        toast.error(error.message);
+      } else if (error?.message?.includes("not supported yet")) {
+        toast.error(error.message);
       } else {
         toast.error("Failed to parse the PDF.");
       }
