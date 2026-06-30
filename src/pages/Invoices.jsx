@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import Navbar from "../components/Navbar";
 import {
   collection,
@@ -11,14 +11,17 @@ import {
   doc,
 } from "firebase/firestore";
 import { db, auth } from "../firebase/firebaseConfig";
-import { Card, Button, Input, Field, EmptyState } from "../components/ui";
+import { Card, Button, Input, Field, EmptyState, Badge } from "../components/ui";
 import { formatCurrency } from "../utils/format";
+import { getMatchedTransaction } from "../utils/matching";
 
 export default function Invoices() {
   const [invoiceNumber, setInvoiceNumber] = useState("");
   const [customerName, setCustomerName] = useState("");
   const [invoiceAmount, setInvoiceAmount] = useState("");
   const [invoices, setInvoices] = useState([]);
+  const [transactions, setTransactions] = useState([]);
+  const [expandedId, setExpandedId] = useState(null);
   const [saving, setSaving] = useState(false);
 
   const fetchInvoices = async () => {
@@ -38,12 +41,50 @@ export default function Invoices() {
     }
   };
 
+  // Transactions are needed so each invoice can be reconciled against them.
+  const fetchTransactions = async () => {
+    try {
+      const q = query(
+        collection(db, "transactions"),
+        where("userId", "==", auth.currentUser.uid)
+      );
+      const snapshot = await getDocs(q);
+      const data = snapshot.docs.map((doc) => {
+        const d = doc.data();
+        // Firestore can store these as strings — normalize to numbers like
+        // the Transactions page does, so amount matching works reliably.
+        return {
+          id: doc.id,
+          ...d,
+          debit: Number(d.debit) || 0,
+          credit: Number(d.credit) || 0,
+          balance: Number(d.balance) || 0,
+        };
+      });
+      setTransactions(data);
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
-      if (user) fetchInvoices();
+      if (user) {
+        fetchInvoices();
+        fetchTransactions();
+      }
     });
     return () => unsubscribe();
   }, []);
+
+  // Precompute the matched transaction (if any) for every invoice.
+  const matchedByInvoice = useMemo(() => {
+    const map = {};
+    invoices.forEach((invoice) => {
+      map[invoice.id] = getMatchedTransaction(invoice, transactions);
+    });
+    return map;
+  }, [invoices, transactions]);
 
   const saveInvoice = async () => {
     if (!invoiceNumber || !customerName || !invoiceAmount) {
@@ -75,6 +116,7 @@ export default function Invoices() {
   const deleteInvoice = async (id) => {
     try {
       await deleteDoc(doc(db, "invoices", id));
+      if (expandedId === id) setExpandedId(null);
       fetchInvoices();
     } catch (error) {
       console.error(error);
@@ -89,7 +131,8 @@ export default function Invoices() {
           <div className="mb-6">
             <h1 className="text-2xl font-bold text-slate-900">Invoices</h1>
             <p className="mt-1 text-sm text-slate-500">
-              Add invoices to reconcile them against your transactions.
+              Add invoices to reconcile them against your transactions. Click an
+              invoice to see its matched transaction.
             </p>
           </div>
 
@@ -153,37 +196,76 @@ export default function Invoices() {
                       <th className="px-5 py-3 text-right font-medium">
                         Amount
                       </th>
+                      <th className="px-5 py-3 font-medium">Status</th>
                       <th className="px-5 py-3 text-right font-medium">
                         Action
                       </th>
                     </tr>
                   </thead>
                   <tbody>
-                    {invoices.map((invoice) => (
-                      <tr
-                        key={invoice.id}
-                        className="border-b border-slate-100 hover:bg-slate-50"
-                      >
-                        <td className="px-5 py-3 font-medium text-slate-800">
-                          {invoice.invoiceNumber}
-                        </td>
-                        <td className="px-5 py-3 text-slate-600">
-                          {invoice.customerName}
-                        </td>
-                        <td className="px-5 py-3 text-right text-slate-800">
-                          {formatCurrency(invoice.invoiceAmount)}
-                        </td>
-                        <td className="px-5 py-3 text-right">
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => deleteInvoice(invoice.id)}
+                    {invoices.map((invoice) => {
+                      const matchedTxn = matchedByInvoice[invoice.id];
+                      const isExpanded = expandedId === invoice.id;
+                      return (
+                        <Fragment key={invoice.id}>
+                          <tr
+                            onClick={() =>
+                              setExpandedId(isExpanded ? null : invoice.id)
+                            }
+                            className="cursor-pointer border-b border-slate-100 hover:bg-slate-50"
                           >
-                            Delete
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
+                            <td className="px-5 py-3 font-medium text-slate-800">
+                              <span className="mr-2 inline-block w-3 text-slate-400">
+                                {isExpanded ? "▾" : "▸"}
+                              </span>
+                              {invoice.invoiceNumber}
+                            </td>
+                            <td className="px-5 py-3 text-slate-600">
+                              {invoice.customerName}
+                            </td>
+                            <td className="px-5 py-3 text-right text-slate-800">
+                              {formatCurrency(invoice.invoiceAmount)}
+                            </td>
+                            <td className="px-5 py-3">
+                              <Badge
+                                variant={matchedTxn ? "success" : "neutral"}
+                              >
+                                {matchedTxn ? "Matched" : "Unmatched"}
+                              </Badge>
+                            </td>
+                            <td className="px-5 py-3 text-right">
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  deleteInvoice(invoice.id);
+                                }}
+                              >
+                                Delete
+                              </Button>
+                            </td>
+                          </tr>
+
+                          {isExpanded && (
+                            <tr className="border-b border-slate-100 bg-slate-50/60">
+                              <td colSpan={5} className="px-5 py-4">
+                                {matchedTxn ? (
+                                  <MatchedTransaction txn={matchedTxn} />
+                                ) : (
+                                  <p className="text-sm text-slate-500">
+                                    No matching transaction found for this
+                                    invoice. A transaction matches when its
+                                    description contains the customer name (or
+                                    invoice number) and the amount is equal.
+                                  </p>
+                                )}
+                              </td>
+                            </tr>
+                          )}
+                        </Fragment>
+                      );
+                    })}
                   </tbody>
                 </table>
               </div>
@@ -192,5 +274,44 @@ export default function Invoices() {
         </div>
       </div>
     </>
+  );
+}
+
+/* Details of the transaction reconciled to an invoice. */
+function MatchedTransaction({ txn }) {
+  const isCredit = Number(txn.credit) > 0;
+  return (
+    <div className="rounded-lg border border-slate-200 bg-white p-4">
+      <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-slate-400">
+        Matched Transaction
+      </p>
+      <div className="grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-3">
+        <Detail label="Date" value={txn.date || "—"} />
+        <Detail label="Type" value={isCredit ? "Credit" : "Debit"} />
+        <Detail
+          label="Amount"
+          value={formatCurrency(isCredit ? txn.credit : txn.debit)}
+          valueClassName={isCredit ? "text-emerald-600" : "text-rose-600"}
+        />
+        <Detail label="Balance" value={formatCurrency(txn.balance)} />
+        <Detail label="Category" value={txn.category || "—"} />
+        <Detail
+          label="Description"
+          value={txn.description || "—"}
+          className="col-span-2 sm:col-span-3"
+        />
+      </div>
+    </div>
+  );
+}
+
+function Detail({ label, value, valueClassName = "text-slate-800", className }) {
+  return (
+    <div className={className}>
+      <p className="text-xs font-medium uppercase tracking-wide text-slate-400">
+        {label}
+      </p>
+      <p className={`mt-1 text-sm font-medium ${valueClassName}`}>{value}</p>
+    </div>
   );
 }
