@@ -368,7 +368,7 @@ User (Firebase Auth)
 |---|---|:---:|
 | 🔑 **API Keys** | Stored in `.env`, excluded from version control | ✅ |
 | 🛡️ **Authentication** | Firebase Auth — JWT tokens, session management | ✅ |
-| 🔐 **Data Isolation** | Firestore queries scoped to authenticated `userId` | ✅ |
+| 🔐 **Data Isolation** | Firestore queries and parser scoped to authenticated `userId` | ✅ |
 | 🚧 **Route Protection** | `ProtectedRoute` component with automatic redirect | ✅ |
 | 📜 **Firestore Rules** | Server-side rules enforce per-user data access | ✅ |
 | 🔒 **PDF Passwords** | CryptoJS handles decryption client-side only | ✅ |
